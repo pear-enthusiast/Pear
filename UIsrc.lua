@@ -6354,6 +6354,7 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
+	local DimFrame = Instance.new("Frame")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
@@ -6364,6 +6365,14 @@ function Pear:Loader(Config: Loader)
 	Loader.IgnoreGuiInset = true
 	Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
+	DimFrame.Name = Pear:RandomString()
+	DimFrame.Parent = Loader
+	DimFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	DimFrame.BackgroundTransparency = 0.45
+	DimFrame.BorderSizePixel = 0
+	DimFrame.Size = UDim2.new(1, 0, 1, 0)
+	DimFrame.ZIndex = 1
+
 	local textSize = 28 * Config.Scale
 	local spacing = 8 * Config.Scale
 
@@ -6371,6 +6380,7 @@ function Pear:Loader(Config: Loader)
 	local nameBounds = TextService:GetTextSize(tostring(Config.Name), textSize, Config.Font, Vector2.new(math.huge, math.huge))
 	local contentWidth = iconBounds.X + spacing + nameBounds.X
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
+	local revealPadding = 6 * Config.Scale
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
@@ -6379,6 +6389,7 @@ function Pear:Loader(Config: Loader)
 	reveal.ClipsDescendants = true
 	reveal.Position = UDim2.new(0.5, -(iconBounds.X / 2), 0, -contentHeight)
 	reveal.Size = UDim2.new(0, iconBounds.X, 0, contentHeight)
+	reveal.ZIndex = 2
 
 	content.Name = Pear:RandomString()
 	content.Parent = reveal
@@ -6386,6 +6397,7 @@ function Pear:Loader(Config: Loader)
 	content.BackgroundTransparency = 1.000
 	content.Position = UDim2.new(0, 0, 0.5, 0)
 	content.Size = UDim2.new(0, contentWidth, 0, contentHeight)
+	content.ZIndex = 2
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6398,6 +6410,7 @@ function Pear:Loader(Config: Loader)
 	IconLabel.TextTransparency = 0
 	IconLabel.TextXAlignment = Enum.TextXAlignment.Left
 	IconLabel.TextYAlignment = Enum.TextYAlignment.Center
+	IconLabel.ZIndex = 2
 
 	NameLabel.Name = Pear:RandomString()
 	NameLabel.Parent = content
@@ -6411,6 +6424,7 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextTransparency = 0
 	NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
+	NameLabel.ZIndex = 2
 
 	local dropTime = 0.45
 	local revealTime = 0.45
@@ -6422,9 +6436,10 @@ function Pear:Loader(Config: Loader)
 	}).Completed:Wait();
 
 	local horizontalShift = 8 * Config.Scale
+	local revealWidth = contentWidth + horizontalShift + revealPadding
 
 	Pear:CreateAnimation(reveal,revealTime,nil,{
-		Size = UDim2.new(0, contentWidth, 0, contentHeight)
+		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
 	Pear:CreateAnimation(content,revealTime,nil,{
@@ -6441,6 +6456,10 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
+	})
+
+	Pear:CreateAnimation(DimFrame,fadeTime,nil,{
+		BackgroundTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
