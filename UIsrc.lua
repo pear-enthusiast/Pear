@@ -6359,11 +6359,11 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
 	local NameLabel = Instance.new("TextLabel")
+	local BackgroundFade = Instance.new("ImageLabel")
 
 	Loader.Name = Pear:RandomString()
 	Loader.Parent = CoreGui
@@ -6378,21 +6378,6 @@ function Pear:Loader(Config: Loader)
 	local contentWidth = iconBounds.X + spacing + nameBounds.X
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
-	local glowPadding = 24 * Config.Scale
-	local glowBaseTransparency = 0.75
-
-	Glow.Name = Pear:RandomString()
-	Glow.Parent = Loader
-	Glow.AnchorPoint = Vector2.new(0.5, 0.5)
-	Glow.BackgroundTransparency = 1
-	Glow.BorderSizePixel = 0
-	Glow.Image = "rbxassetid://5553946656" -- radial blur mask, center heavy to transparent edges
-	Glow.ImageColor3 = Color3.new(0, 0, 0)
-	Glow.ImageTransparency = glowBaseTransparency
-	Glow.ScaleType = Enum.ScaleType.Stretch
-	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
-	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
-	Glow.ZIndex = 2
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
@@ -6400,7 +6385,7 @@ function Pear:Loader(Config: Loader)
 	reveal.BackgroundTransparency = 1.000
 	reveal.ClipsDescendants = true
 	reveal.Position = UDim2.new(0.5, 0, 0, -contentHeight)
-	reveal.Size = UDim2.new(0, iconBounds.X, 0, contentHeight)
+	reveal.Size = UDim2.new(0, 0, 0, 0)
 	reveal.ZIndex = 3
 
 	content.Name = Pear:RandomString()
@@ -6408,8 +6393,21 @@ function Pear:Loader(Config: Loader)
 	content.AnchorPoint = Vector2.new(0, 0.5)
 	content.BackgroundTransparency = 1.000
 	content.Position = UDim2.new(0, 0, 0.5, 0)
-	content.Size = UDim2.new(0, contentWidth, 0, contentHeight)
+	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
+
+	BackgroundFade.Name = Pear:RandomString()
+	BackgroundFade.Parent = reveal
+	BackgroundFade.AnchorPoint = Vector2.new(0.5, 0.5)
+	BackgroundFade.BackgroundTransparency = 1
+	BackgroundFade.BorderSizePixel = 0
+	BackgroundFade.Position = UDim2.new(0.5, 0, 0.5, 0)
+	BackgroundFade.Size = UDim2.new(0, 0, 0, 0)
+	BackgroundFade.ZIndex = 1
+	BackgroundFade.Image = "rbxassetid://5553946656"
+	BackgroundFade.ImageColor3 = Color3.new(0, 0, 0)
+	BackgroundFade.ImageTransparency = 1
+	BackgroundFade.ScaleType = Enum.ScaleType.Stretch
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6419,7 +6417,7 @@ function Pear:Loader(Config: Loader)
 	IconLabel.Text = tostring(Config.Icon)
 	IconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	IconLabel.TextSize = textSize
-	IconLabel.TextTransparency = 0
+	IconLabel.TextTransparency = 1
 	IconLabel.TextXAlignment = Enum.TextXAlignment.Left
 	IconLabel.TextYAlignment = Enum.TextYAlignment.Center
 	IconLabel.ZIndex = 2
@@ -6433,7 +6431,7 @@ function Pear:Loader(Config: Loader)
 	NameLabel.Text = tostring(Config.Name)
 	NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	NameLabel.TextSize = textSize
-	NameLabel.TextTransparency = 0
+	NameLabel.TextTransparency = 1
 	NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
@@ -6443,35 +6441,51 @@ function Pear:Loader(Config: Loader)
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
-	Pear:CreateAnimation(Glow,dropTime,nil,{
+	local dropTween = Pear:CreateAnimation(reveal,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
-
-	Pear:CreateAnimation(reveal,dropTime,nil,{
-		Position = UDim2.new(0.5, 0, 0.5, 0)
-	}).Completed:Wait();
+	dropTween.Completed:Wait();
 
 	local horizontalShift = 8 * Config.Scale
 	local contentShift = horizontalShift + revealPadding
 	local revealWidth = contentWidth + (contentShift * 2)
-	local glowWidth = revealWidth + (glowPadding * 2)
-	local glowHeight = contentHeight + (glowPadding * 2)
+	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
 
-	Pear:CreateAnimation(Glow,revealTime,nil,{
-		Size = UDim2.new(0, glowWidth, 0, glowHeight)
+	Pear:CreateAnimation(BackgroundFade,dropTime,nil,{
+		Size = UDim2.new(0, fadeSize, 0, fadeSize),
+		ImageTransparency = 1
 	})
 
 	Pear:CreateAnimation(reveal,revealTime,nil,{
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
+	Pear:CreateAnimation(BackgroundFade,revealTime,nil,{
+		Size = UDim2.new(0, fadeSize * 1.1, 0, fadeSize * 1.1),
+		ImageTransparency = 0.6
+	})
 	Pear:CreateAnimation(content,revealTime,nil,{
-		Position = UDim2.new(0, contentShift, 0.5, 0)
+		Position = UDim2.new(0, contentShift, 0.5, 0),
+		Size = UDim2.new(0, contentWidth, 0, contentHeight)
+	})
+
+	Pear:CreateAnimation(IconLabel,revealTime,nil,{
+		TextTransparency = 0
+	})
+
+	Pear:CreateAnimation(NameLabel,revealTime,nil,{
+		TextTransparency = 0
 	}).Completed:Wait();
 
 	if holdTime > 0 then
 		task.wait(holdTime)
 	end
+
+	local fadeExpand = 1.08
+	local expandedRevealWidth = revealWidth * fadeExpand
+	local expandedHeight = contentHeight * fadeExpand
+	local expandedContentWidth = contentWidth * fadeExpand
+	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
 	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
 		TextTransparency = 1
@@ -6481,8 +6495,18 @@ function Pear:Loader(Config: Loader)
 		TextTransparency = 1
 	})
 
-	Pear:CreateAnimation(Glow,fadeTime,nil,{
-		ImageTransparency = 1
+	Pear:CreateAnimation(BackgroundFade,fadeTime,nil,{
+		ImageTransparency = 1,
+		Size = UDim2.new(0, fadeSize * 1.25, 0, fadeSize * 1.25)
+	})
+
+	Pear:CreateAnimation(reveal,fadeTime,nil,{
+		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
+	})
+
+	Pear:CreateAnimation(content,fadeTime,nil,{
+		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
+		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
 	})
 
 	task.wait(fadeTime + 0.05);
