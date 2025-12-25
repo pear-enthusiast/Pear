@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-3
+4
 --]]
 
 -- Export Types --
@@ -6360,7 +6360,7 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local Glow = Instance.new("ImageLabel")
+	local Glow = Instance.new("Frame")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
@@ -6380,27 +6380,25 @@ function Pear:Loader(Config: Loader)
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
 	local glowPadding = 24 * Config.Scale
+	local glowBaseTransparency = 0.75
 
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
 	Glow.AnchorPoint = Vector2.new(0.5, 0.5)
-	Glow.BackgroundTransparency = 1
+	Glow.BackgroundColor3 = Color3.new(0, 0, 0)
+	Glow.BackgroundTransparency = glowBaseTransparency
 	Glow.BorderSizePixel = 0
-	Glow.Image = "rbxassetid://5553946656"
-	Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	Glow.ImageTransparency = 0.45
-	Glow.ScaleType = Enum.ScaleType.Stretch
 	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
 	Glow.ZIndex = 2
-	-- Fade the edges of the intro glow so borders disappear smoothly
+	-- Fade edges of the intro background so borders blur out
 	local GlowFade = Instance.new("UIGradient")
 	GlowFade.Color = ColorSequence.new(Color3.new(1,1,1))
 	GlowFade.Transparency = NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.08, 0.6),
+		NumberSequenceKeypoint.new(0.1, 0.6),
 		NumberSequenceKeypoint.new(0.5, 0),
-		NumberSequenceKeypoint.new(0.92, 0.6),
+		NumberSequenceKeypoint.new(0.9, 0.6),
 		NumberSequenceKeypoint.new(1, 1),
 	})
 	GlowFade.Rotation = 45
@@ -6494,7 +6492,7 @@ function Pear:Loader(Config: Loader)
 	})
 
 	Pear:CreateAnimation(Glow,fadeTime,nil,{
-		ImageTransparency = 1
+		BackgroundTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
