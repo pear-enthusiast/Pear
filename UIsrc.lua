@@ -6359,7 +6359,6 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local DimFrame = Instance.new("Frame")
 	local GlowOuter = Instance.new("ImageLabel")
 	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
@@ -6372,14 +6371,6 @@ function Pear:Loader(Config: Loader)
 	Loader.IgnoreGuiInset = true
 	Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
-	DimFrame.Name = Pear:RandomString()
-	DimFrame.Parent = Loader
-	DimFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	DimFrame.BackgroundTransparency = 1
-	DimFrame.BorderSizePixel = 0
-	DimFrame.Size = UDim2.new(1, 0, 1, 0)
-	DimFrame.ZIndex = 0
-
 	local textSize = 28 * Config.Scale
 	local spacing = 8 * Config.Scale
 
@@ -6390,7 +6381,6 @@ function Pear:Loader(Config: Loader)
 	local revealPadding = 6 * Config.Scale
 	local glowPadding = 18 * Config.Scale
 	local glowOuterPadding = glowPadding * 1.8
-	local dimTarget = 0.9
 
 	GlowOuter.Name = Pear:RandomString()
 	GlowOuter.Parent = Loader
@@ -6467,10 +6457,6 @@ function Pear:Loader(Config: Loader)
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
-	Pear:CreateAnimation(DimFrame,dropTime,nil,{
-		BackgroundTransparency = dimTarget
-	})
-
 	Pear:CreateAnimation(GlowOuter,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
@@ -6517,10 +6503,6 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
-	})
-
-	Pear:CreateAnimation(DimFrame,fadeTime,nil,{
-		BackgroundTransparency = 1
 	})
 
 	Pear:CreateAnimation(GlowOuter,fadeTime,nil,{
