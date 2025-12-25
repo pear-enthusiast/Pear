@@ -6359,6 +6359,8 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
+	local DimFrame = Instance.new("Frame")
+	local GlowOuter = Instance.new("ImageLabel")
 	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
@@ -6370,6 +6372,14 @@ function Pear:Loader(Config: Loader)
 	Loader.IgnoreGuiInset = true
 	Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
+	DimFrame.Name = Pear:RandomString()
+	DimFrame.Parent = Loader
+	DimFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	DimFrame.BackgroundTransparency = 1
+	DimFrame.BorderSizePixel = 0
+	DimFrame.Size = UDim2.new(1, 0, 1, 0)
+	DimFrame.ZIndex = 0
+
 	local textSize = 28 * Config.Scale
 	local spacing = 8 * Config.Scale
 
@@ -6379,6 +6389,21 @@ function Pear:Loader(Config: Loader)
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
 	local glowPadding = 18 * Config.Scale
+	local glowOuterPadding = glowPadding * 1.8
+	local dimTarget = 0.9
+
+	GlowOuter.Name = Pear:RandomString()
+	GlowOuter.Parent = Loader
+	GlowOuter.AnchorPoint = Vector2.new(0.5, 0.5)
+	GlowOuter.BackgroundTransparency = 1
+	GlowOuter.BorderSizePixel = 0
+	GlowOuter.Image = "rbxassetid://5553946656"
+	GlowOuter.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	GlowOuter.ImageTransparency = 0.8
+	GlowOuter.ScaleType = Enum.ScaleType.Stretch
+	GlowOuter.Position = UDim2.new(0.5, 0, 0, -contentHeight)
+	GlowOuter.Size = UDim2.new(0, iconBounds.X + (glowOuterPadding * 2), 0, contentHeight + (glowOuterPadding * 2))
+	GlowOuter.ZIndex = 1
 
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
@@ -6387,11 +6412,11 @@ function Pear:Loader(Config: Loader)
 	Glow.BorderSizePixel = 0
 	Glow.Image = "rbxassetid://5553946656"
 	Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	Glow.ImageTransparency = 0.35
+	Glow.ImageTransparency = 0.45
 	Glow.ScaleType = Enum.ScaleType.Stretch
 	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
-	Glow.ZIndex = 1
+	Glow.ZIndex = 2
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
@@ -6400,7 +6425,7 @@ function Pear:Loader(Config: Loader)
 	reveal.ClipsDescendants = true
 	reveal.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	reveal.Size = UDim2.new(0, iconBounds.X, 0, contentHeight)
-	reveal.ZIndex = 2
+	reveal.ZIndex = 3
 
 	content.Name = Pear:RandomString()
 	content.Parent = reveal
@@ -6442,6 +6467,14 @@ function Pear:Loader(Config: Loader)
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
+	Pear:CreateAnimation(DimFrame,dropTime,nil,{
+		BackgroundTransparency = dimTarget
+	})
+
+	Pear:CreateAnimation(GlowOuter,dropTime,nil,{
+		Position = UDim2.new(0.5, 0, 0.5, 0)
+	})
+
 	Pear:CreateAnimation(Glow,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
@@ -6455,6 +6488,12 @@ function Pear:Loader(Config: Loader)
 	local revealWidth = contentWidth + (contentShift * 2)
 	local glowWidth = revealWidth + (glowPadding * 2)
 	local glowHeight = contentHeight + (glowPadding * 2)
+	local glowOuterWidth = revealWidth + (glowOuterPadding * 2)
+	local glowOuterHeight = contentHeight + (glowOuterPadding * 2)
+
+	Pear:CreateAnimation(GlowOuter,revealTime,nil,{
+		Size = UDim2.new(0, glowOuterWidth, 0, glowOuterHeight)
+	})
 
 	Pear:CreateAnimation(Glow,revealTime,nil,{
 		Size = UDim2.new(0, glowWidth, 0, glowHeight)
@@ -6478,6 +6517,14 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
+	})
+
+	Pear:CreateAnimation(DimFrame,fadeTime,nil,{
+		BackgroundTransparency = 1
+	})
+
+	Pear:CreateAnimation(GlowOuter,fadeTime,nil,{
+		ImageTransparency = 1
 	})
 
 	Pear:CreateAnimation(Glow,fadeTime,nil,{
