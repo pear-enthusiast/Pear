@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-1
+2
 --]]
 
 -- Export Types --
@@ -6360,7 +6360,6 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local GlowOuter = Instance.new("ImageLabel")
 	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
@@ -6381,20 +6380,6 @@ function Pear:Loader(Config: Loader)
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
 	local glowPadding = 18 * Config.Scale
-	local glowOuterPadding = glowPadding * 1.8
-
-	GlowOuter.Name = Pear:RandomString()
-	GlowOuter.Parent = Loader
-	GlowOuter.AnchorPoint = Vector2.new(0.5, 0.5)
-	GlowOuter.BackgroundTransparency = 1
-	GlowOuter.BorderSizePixel = 0
-	GlowOuter.Image = "rbxassetid://5553946656"
-	GlowOuter.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	GlowOuter.ImageTransparency = 0.8
-	GlowOuter.ScaleType = Enum.ScaleType.Stretch
-	GlowOuter.Position = UDim2.new(0.5, 0, 0, -contentHeight)
-	GlowOuter.Size = UDim2.new(0, iconBounds.X + (glowOuterPadding * 2), 0, contentHeight + (glowOuterPadding * 2))
-	GlowOuter.ZIndex = 1
 
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
@@ -6458,10 +6443,6 @@ function Pear:Loader(Config: Loader)
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
-	Pear:CreateAnimation(GlowOuter,dropTime,nil,{
-		Position = UDim2.new(0.5, 0, 0.5, 0)
-	})
-
 	Pear:CreateAnimation(Glow,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
@@ -6475,12 +6456,6 @@ function Pear:Loader(Config: Loader)
 	local revealWidth = contentWidth + (contentShift * 2)
 	local glowWidth = revealWidth + (glowPadding * 2)
 	local glowHeight = contentHeight + (glowPadding * 2)
-	local glowOuterWidth = revealWidth + (glowOuterPadding * 2)
-	local glowOuterHeight = contentHeight + (glowOuterPadding * 2)
-
-	Pear:CreateAnimation(GlowOuter,revealTime,nil,{
-		Size = UDim2.new(0, glowOuterWidth, 0, glowOuterHeight)
-	})
 
 	Pear:CreateAnimation(Glow,revealTime,nil,{
 		Size = UDim2.new(0, glowWidth, 0, glowHeight)
@@ -6504,10 +6479,6 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
-	})
-
-	Pear:CreateAnimation(GlowOuter,fadeTime,nil,{
-		ImageTransparency = 1
 	})
 
 	Pear:CreateAnimation(Glow,fadeTime,nil,{
