@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-6
+7
 --]]
 
 -- Export Types --
@@ -6364,6 +6364,7 @@ function Pear:Loader(Config: Loader)
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
 	local NameLabel = Instance.new("TextLabel")
+	local BackgroundFade = Instance.new("ImageLabel")
 
 	Loader.Name = Pear:RandomString()
 	Loader.Parent = CoreGui
@@ -6395,6 +6396,19 @@ function Pear:Loader(Config: Loader)
 	content.Position = UDim2.new(0, 0, 0.5, 0)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
+
+	BackgroundFade.Name = Pear:RandomString()
+	BackgroundFade.Parent = reveal
+	BackgroundFade.AnchorPoint = Vector2.new(0.5, 0.5)
+	BackgroundFade.BackgroundTransparency = 1
+	BackgroundFade.BorderSizePixel = 0
+	BackgroundFade.Position = UDim2.new(0.5, 0, 0.5, 0)
+	BackgroundFade.Size = UDim2.new(0, 0, 0, 0)
+	BackgroundFade.ZIndex = 1
+	BackgroundFade.Image = "rbxassetid://5553946656"
+	BackgroundFade.ImageColor3 = Color3.new(0, 0, 0)
+	BackgroundFade.ImageTransparency = 1
+	BackgroundFade.ScaleType = Enum.ScaleType.Stretch
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6436,11 +6450,21 @@ function Pear:Loader(Config: Loader)
 	local horizontalShift = 8 * Config.Scale
 	local contentShift = horizontalShift + revealPadding
 	local revealWidth = contentWidth + (contentShift * 2)
+	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
+
+	Pear:CreateAnimation(BackgroundFade,dropTime,nil,{
+		Size = UDim2.new(0, fadeSize, 0, fadeSize),
+		ImageTransparency = 1
+	})
 
 	Pear:CreateAnimation(reveal,revealTime,nil,{
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
+	Pear:CreateAnimation(BackgroundFade,revealTime,nil,{
+		Size = UDim2.new(0, fadeSize * 1.1, 0, fadeSize * 1.1),
+		ImageTransparency = 0.6
+	})
 	Pear:CreateAnimation(content,revealTime,nil,{
 		Position = UDim2.new(0, contentShift, 0.5, 0),
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
@@ -6470,6 +6494,11 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
+	})
+
+	Pear:CreateAnimation(BackgroundFade,fadeTime,nil,{
+		ImageTransparency = 1,
+		Size = UDim2.new(0, fadeSize * 1.25, 0, fadeSize * 1.25)
 	})
 
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
