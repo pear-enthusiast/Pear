@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7
+8
 --]]
 
 -- Export Types --
@@ -6364,8 +6364,6 @@ function Pear:Loader(Config: Loader)
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
 	local NameLabel = Instance.new("TextLabel")
-	local BackgroundFade = Instance.new("ImageLabel")
-
 	Loader.Name = Pear:RandomString()
 	Loader.Parent = CoreGui
 	Loader.IgnoreGuiInset = true
@@ -6397,18 +6395,17 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	BackgroundFade.Name = Pear:RandomString()
-	BackgroundFade.Parent = reveal
-	BackgroundFade.AnchorPoint = Vector2.new(0.5, 0.5)
-	BackgroundFade.BackgroundTransparency = 1
-	BackgroundFade.BorderSizePixel = 0
-	BackgroundFade.Position = UDim2.new(0.5, 0, 0.5, 0)
-	BackgroundFade.Size = UDim2.new(0, 0, 0, 0)
-	BackgroundFade.ZIndex = 1
-	BackgroundFade.Image = "rbxassetid://5553946656"
-	BackgroundFade.ImageColor3 = Color3.new(0, 0, 0)
-	BackgroundFade.ImageTransparency = 1
-	BackgroundFade.ScaleType = Enum.ScaleType.Stretch
+	local FadeFrame = Instance.new("Frame")
+
+	FadeFrame.Name = Pear:RandomString()
+	FadeFrame.Parent = reveal
+	FadeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	FadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+	FadeFrame.BackgroundTransparency = 1
+	FadeFrame.BorderSizePixel = 0
+	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	FadeFrame.Size = UDim2.new(0, 0, 0, 0)
+	FadeFrame.ZIndex = 1
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
