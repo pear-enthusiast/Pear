@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-2
+3
 --]]
 
 -- Export Types --
@@ -6379,7 +6379,7 @@ function Pear:Loader(Config: Loader)
 	local contentWidth = iconBounds.X + spacing + nameBounds.X
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
-	local glowPadding = 18 * Config.Scale
+	local glowPadding = 24 * Config.Scale
 
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
@@ -6393,6 +6393,18 @@ function Pear:Loader(Config: Loader)
 	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
 	Glow.ZIndex = 2
+	-- Fade the edges of the intro glow so borders disappear smoothly
+	local GlowFade = Instance.new("UIGradient")
+	GlowFade.Color = ColorSequence.new(Color3.new(1,1,1))
+	GlowFade.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.08, 0.6),
+		NumberSequenceKeypoint.new(0.5, 0),
+		NumberSequenceKeypoint.new(0.92, 0.6),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	GlowFade.Rotation = 45
+	GlowFade.Parent = Glow
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
