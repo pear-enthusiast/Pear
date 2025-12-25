@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-4
+5
 --]]
 
 -- Export Types --
@@ -6360,7 +6360,7 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local Glow = Instance.new("Frame")
+	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
@@ -6385,24 +6385,15 @@ function Pear:Loader(Config: Loader)
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
 	Glow.AnchorPoint = Vector2.new(0.5, 0.5)
-	Glow.BackgroundColor3 = Color3.new(0, 0, 0)
-	Glow.BackgroundTransparency = glowBaseTransparency
+	Glow.BackgroundTransparency = 1
 	Glow.BorderSizePixel = 0
+	Glow.Image = "rbxassetid://5553946656" -- radial blur mask, center heavy to transparent edges
+	Glow.ImageColor3 = Color3.new(0, 0, 0)
+	Glow.ImageTransparency = glowBaseTransparency
+	Glow.ScaleType = Enum.ScaleType.Stretch
 	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
 	Glow.ZIndex = 2
-	-- Fade edges of the intro background so borders blur out
-	local GlowFade = Instance.new("UIGradient")
-	GlowFade.Color = ColorSequence.new(Color3.new(1,1,1))
-	GlowFade.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.1, 0.6),
-		NumberSequenceKeypoint.new(0.5, 0),
-		NumberSequenceKeypoint.new(0.9, 0.6),
-		NumberSequenceKeypoint.new(1, 1),
-	})
-	GlowFade.Rotation = 45
-	GlowFade.Parent = Glow
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
@@ -6492,7 +6483,7 @@ function Pear:Loader(Config: Loader)
 	})
 
 	Pear:CreateAnimation(Glow,fadeTime,nil,{
-		BackgroundTransparency = 1
+		ImageTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
