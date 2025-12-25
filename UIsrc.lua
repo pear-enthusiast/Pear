@@ -4142,6 +4142,11 @@ function Pear.new(Window: Window)
 	Window.Scale = Window.Scale or UDim2.new(0, 750, 0, 500);
 	Window.Keybind = Window.Keybind or "Insert";
 	Window.Version = tostring(Window.Version or Pear.Version);
+	local windowTitle = Window.Name;
+
+	if not string.find(windowTitle, "🍐", 1, true) then
+		windowTitle = windowTitle .. " 🍐";
+	end
 
 	local Fatal = {
 		Menus = {},
@@ -4451,10 +4456,10 @@ function Pear.new(Window: Window)
 	HeaderText.Size = UDim2.new(0, 100, 0.699999988, 0)
 	HeaderText.ZIndex = 4
 	HeaderText.Font = Enum.Font.GothamBold
-	HeaderText.Text = Window.Name
+	HeaderText.Text = windowTitle
 	HeaderText.TextColor3 = Color3.fromRGB(229, 229, 229)
 	HeaderText.TextSize = 21.000
-	HeaderText.TextStrokeColor3 = Color3.fromRGB(205, 67, 218)
+	HeaderText.TextStrokeColor3 = Color3.fromRGB(166, 211, 136)
 	HeaderText.TextStrokeTransparency = 0.640
 
 	MenuButtonCont.Name = Pear:RandomString()
@@ -6238,7 +6243,7 @@ function Pear.new(Window: Window)
 		StyledTextLabel.BackgroundTransparency = 1.000
 		StyledTextLabel.Size = UDim2.new(1, -52, 1, 0)
 		StyledTextLabel.Font = Enum.Font.BuilderSansBold
-		StyledTextLabel.Text = Window.Name
+		StyledTextLabel.Text = windowTitle
 		StyledTextLabel.TextColor3 = Color3.fromRGB(247, 247, 248)
 		StyledTextLabel.TextScaled = true
 		StyledTextLabel.TextSize = 20.000
@@ -6354,8 +6359,7 @@ function Pear:Loader(Config: Loader)
 	Config.Scale = Config.Scale or 2;
 
 	local Loader = Instance.new("ScreenGui")
-	local Glow = Instance.new("Frame")
-	local GlowCorner = Instance.new("UICorner")
+	local Glow = Instance.new("ImageLabel")
 	local reveal = Instance.new("Frame")
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
@@ -6379,15 +6383,15 @@ function Pear:Loader(Config: Loader)
 	Glow.Name = Pear:RandomString()
 	Glow.Parent = Loader
 	Glow.AnchorPoint = Vector2.new(0.5, 0.5)
-	Glow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	Glow.BackgroundTransparency = 0.55
+	Glow.BackgroundTransparency = 1
 	Glow.BorderSizePixel = 0
+	Glow.Image = "rbxassetid://5553946656"
+	Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	Glow.ImageTransparency = 0.35
+	Glow.ScaleType = Enum.ScaleType.Stretch
 	Glow.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	Glow.Size = UDim2.new(0, iconBounds.X + (glowPadding * 2), 0, contentHeight + (glowPadding * 2))
 	Glow.ZIndex = 1
-
-	GlowCorner.CornerRadius = UDim.new(1, 0)
-	GlowCorner.Parent = Glow
 
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
@@ -6477,7 +6481,7 @@ function Pear:Loader(Config: Loader)
 	})
 
 	Pear:CreateAnimation(Glow,fadeTime,nil,{
-		BackgroundTransparency = 1
+		ImageTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
