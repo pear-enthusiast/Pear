@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-6738
+glitter
 --]]
 
 -- Export Types --
@@ -6446,8 +6446,6 @@ function Pear:Loader(Config: Loader)
 	IconLabel.TextXAlignment = Enum.TextXAlignment.Left
 	IconLabel.TextYAlignment = Enum.TextYAlignment.Center
 	IconLabel.ZIndex = 2
-	IconLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-	IconLabel.TextStrokeTransparency = 1
 
 	NameLabel.Name = Pear:RandomString()
 	NameLabel.Parent = content
@@ -6462,8 +6460,19 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
-	NameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-	NameLabel.TextStrokeTransparency = 1
+
+	local GlowImage = Instance.new("ImageLabel")
+	GlowImage.Name = Pear:RandomString()
+	GlowImage.Parent = content
+	GlowImage.BackgroundTransparency = 1.000
+	GlowImage.AnchorPoint = Vector2.new(0.5, 0.5)
+	GlowImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+	GlowImage.Size = UDim2.new(0, contentWidth * 2.6, 0, contentHeight * 2.2)
+	GlowImage.Image = "rbxasset://textures/glow.png"
+	GlowImage.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	GlowImage.ImageTransparency = 1
+	GlowImage.ScaleType = Enum.ScaleType.Fit
+	GlowImage.ZIndex = 1
 
 	local dropTime = 0.45
 	local revealTime = 0.45
@@ -6489,14 +6498,16 @@ function Pear:Loader(Config: Loader)
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
 	})
 
+	Pear:CreateAnimation(GlowImage,revealTime,nil,{
+		ImageTransparency = 0.75
+	})
+
 	Pear:CreateAnimation(IconLabel,revealTime,nil,{
-		TextTransparency = 0,
-		TextStrokeTransparency = 0.4
+		TextTransparency = 0
 	})
 
 	Pear:CreateAnimation(NameLabel,revealTime,nil,{
-		TextTransparency = 0,
-		TextStrokeTransparency = 0.4
+		TextTransparency = 0
 	}).Completed:Wait();
 
 	if holdTime > 0 then
@@ -6510,13 +6521,15 @@ function Pear:Loader(Config: Loader)
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
 	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
-		TextTransparency = 1,
-		TextStrokeTransparency = 1
+		TextTransparency = 1
 	})
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
-		TextTransparency = 1,
-		TextStrokeTransparency = 1
+		TextTransparency = 1
+	})
+
+	Pear:CreateAnimation(GlowImage,fadeTime,nil,{
+		ImageTransparency = 1
 	})
 
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
