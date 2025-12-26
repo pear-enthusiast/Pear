@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-2
+3
 --]]
 
 -- Export Types --
@@ -4434,15 +4434,15 @@ function Pear.new(Window: Window)
 	DropShadow.Rotation = 0.001
 
 	PearBackground.Name = Pear:RandomString()
-	PearBackground.Parent = FatalFrame
+	PearBackground.Parent = MenuFrame
 	PearBackground.Active = false
 	PearBackground.AnchorPoint = Vector2.new(0.5, 0.5)
 	PearBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	PearBackground.BackgroundTransparency = 1.000
 	PearBackground.BorderSizePixel = 0
-	PearBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
-	PearBackground.Size = UDim2.new(1, 0, 1, 0)
-	PearBackground.ZIndex = 1
+	PearBackground.Position = UDim2.fromScale(0.5, 0.5)
+	PearBackground.Size = UDim2.fromScale(1.25, 1.25)
+	PearBackground.ZIndex = 2
 	PearBackground.Font = Enum.Font.SourceSans
 	PearBackground.Text = utf8.char(0x1F350)
 	PearBackground.TextColor3 = Color3.fromRGB(166, 211, 136)
