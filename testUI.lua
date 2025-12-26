@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-3
+4
 --]]
 
 -- Export Types --
@@ -4298,7 +4298,7 @@ function Pear.new(Window: Window)
 			})
 
 			Pear:CreateAnimation(PearBackground,0.35,{
-				TextTransparency = 0.5
+				TextTransparency = 0.8
 			})
 		else
 			table.clear(Pear.DragBlacklist);
@@ -4441,7 +4441,7 @@ function Pear.new(Window: Window)
 	PearBackground.BackgroundTransparency = 1.000
 	PearBackground.BorderSizePixel = 0
 	PearBackground.Position = UDim2.fromScale(0.5, 0.5)
-	PearBackground.Size = UDim2.fromScale(1.25, 1.25)
+	PearBackground.Size = UDim2.fromScale(2.5, 2.5)
 	PearBackground.ZIndex = 2
 	PearBackground.Font = Enum.Font.SourceSans
 	PearBackground.Text = utf8.char(0x1F350)
