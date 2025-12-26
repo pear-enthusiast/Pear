@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-1
+2
 --]]
 
 -- Export Types --
@@ -4163,6 +4163,7 @@ function Pear.new(Window: Window)
 	local FatalFrame = Instance.new("Frame")
 	local UICorner = Instance.new("UICorner")
 	local DropShadow = Instance.new("ImageLabel")
+	local PearBackground = Instance.new("TextLabel")
 	local Header = Instance.new("Frame")
 	local HeaderLine = Instance.new("Frame")
 	local UICorner_2 = Instance.new("UICorner")
@@ -4295,6 +4296,10 @@ function Pear.new(Window: Window)
 			Pear:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 0.75
 			})
+
+			Pear:CreateAnimation(PearBackground,0.35,{
+				TextTransparency = 0.5
+			})
 		else
 			table.clear(Pear.DragBlacklist);
 
@@ -4382,6 +4387,10 @@ function Pear.new(Window: Window)
 			Pear:CreateAnimation(DropShadow,0.35,{
 				ImageTransparency = 1
 			})
+
+			Pear:CreateAnimation(PearBackground,0.35,{
+				TextTransparency = 1
+			})
 		end
 	end
 
@@ -4423,6 +4432,24 @@ function Pear.new(Window: Window)
 	DropShadow.ScaleType = Enum.ScaleType.Slice
 	DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
 	DropShadow.Rotation = 0.001
+
+	PearBackground.Name = Pear:RandomString()
+	PearBackground.Parent = FatalFrame
+	PearBackground.Active = false
+	PearBackground.AnchorPoint = Vector2.new(0.5, 0.5)
+	PearBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	PearBackground.BackgroundTransparency = 1.000
+	PearBackground.BorderSizePixel = 0
+	PearBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
+	PearBackground.Size = UDim2.new(1, 0, 1, 0)
+	PearBackground.ZIndex = 1
+	PearBackground.Font = Enum.Font.SourceSans
+	PearBackground.Text = utf8.char(0x1F350)
+	PearBackground.TextColor3 = Color3.fromRGB(166, 211, 136)
+	PearBackground.TextScaled = true
+	PearBackground.TextSize = 250.000
+	PearBackground.TextTransparency = 1
+	PearBackground.TextStrokeTransparency = 1
 
 	Header.Name = Pear:RandomString()
 	Header.Parent = FatalFrame
@@ -6449,19 +6476,10 @@ function Pear:Loader(Config: Loader)
 	local revealWidth = contentWidth + (contentShift * 2)
 	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
 
-	Pear:CreateAnimation(BackgroundFade,dropTime,nil,{
-		Size = UDim2.new(0, fadeSize, 0, fadeSize),
-		ImageTransparency = 1
-	})
-
 	Pear:CreateAnimation(reveal,revealTime,nil,{
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
-	Pear:CreateAnimation(BackgroundFade,revealTime,nil,{
-		Size = UDim2.new(0, fadeSize * 1.1, 0, fadeSize * 1.1),
-		ImageTransparency = 0.6
-	})
 	Pear:CreateAnimation(content,revealTime,nil,{
 		Position = UDim2.new(0, contentShift, 0.5, 0),
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
@@ -6491,11 +6509,6 @@ function Pear:Loader(Config: Loader)
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
 		TextTransparency = 1
-	})
-
-	Pear:CreateAnimation(BackgroundFade,fadeTime,nil,{
-		ImageTransparency = 1,
-		Size = UDim2.new(0, fadeSize * 1.25, 0, fadeSize * 1.25)
 	})
 
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
