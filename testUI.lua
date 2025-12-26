@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-8
+6738
 --]]
 
 -- Export Types --
@@ -6422,22 +6422,6 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	local ContentBackground = Instance.new("Frame")
-	local ContentCorner = Instance.new("UICorner")
-
-	ContentBackground.Name = Pear:RandomString()
-	ContentBackground.Parent = content
-	ContentBackground.AnchorPoint = Vector2.new(0, 0.5)
-	ContentBackground.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-	ContentBackground.BackgroundTransparency = 1
-	ContentBackground.BorderSizePixel = 0
-	ContentBackground.Position = UDim2.new(0, 0, 0.5, 0)
-	ContentBackground.Size = UDim2.new(1, 0, 1, 0)
-	ContentBackground.ZIndex = 1
-
-	ContentCorner.CornerRadius = UDim.new(0, 6)
-	ContentCorner.Parent = ContentBackground
-
 	local FadeFrame = Instance.new("Frame")
 
 	FadeFrame.Name = Pear:RandomString()
@@ -6462,6 +6446,8 @@ function Pear:Loader(Config: Loader)
 	IconLabel.TextXAlignment = Enum.TextXAlignment.Left
 	IconLabel.TextYAlignment = Enum.TextYAlignment.Center
 	IconLabel.ZIndex = 2
+	IconLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	IconLabel.TextStrokeTransparency = 1
 
 	NameLabel.Name = Pear:RandomString()
 	NameLabel.Parent = content
@@ -6476,6 +6462,8 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
+	NameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	NameLabel.TextStrokeTransparency = 1
 
 	local dropTime = 0.45
 	local revealTime = 0.45
@@ -6502,18 +6490,14 @@ function Pear:Loader(Config: Loader)
 	})
 
 	Pear:CreateAnimation(IconLabel,revealTime,nil,{
-		TextTransparency = 0
+		TextTransparency = 0,
+		TextStrokeTransparency = 0.4
 	})
 
-	local nameTween = Pear:CreateAnimation(NameLabel,revealTime,nil,{
-		TextTransparency = 0
-	})
-
-	Pear:CreateAnimation(ContentBackground,revealTime,nil,{
-		BackgroundTransparency = 0.6
-	})
-
-	nameTween.Completed:Wait();
+	Pear:CreateAnimation(NameLabel,revealTime,nil,{
+		TextTransparency = 0,
+		TextStrokeTransparency = 0.4
+	}).Completed:Wait();
 
 	if holdTime > 0 then
 		task.wait(holdTime)
@@ -6526,11 +6510,13 @@ function Pear:Loader(Config: Loader)
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
 	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
-		TextTransparency = 1
+		TextTransparency = 1,
+		TextStrokeTransparency = 1
 	})
 
 	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
-		TextTransparency = 1
+		TextTransparency = 1,
+		TextStrokeTransparency = 1
 	})
 
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
@@ -6540,9 +6526,6 @@ function Pear:Loader(Config: Loader)
 	Pear:CreateAnimation(content,fadeTime,nil,{
 		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
-	})
-	Pear:CreateAnimation(ContentBackground,fadeTime,nil,{
-		BackgroundTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
