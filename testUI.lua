@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7
+8
 --]]
 
 -- Export Types --
@@ -6422,6 +6422,22 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
+	local ContentBackground = Instance.new("Frame")
+	local ContentCorner = Instance.new("UICorner")
+
+	ContentBackground.Name = Pear:RandomString()
+	ContentBackground.Parent = content
+	ContentBackground.AnchorPoint = Vector2.new(0, 0.5)
+	ContentBackground.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+	ContentBackground.BackgroundTransparency = 1
+	ContentBackground.BorderSizePixel = 0
+	ContentBackground.Position = UDim2.new(0, 0, 0.5, 0)
+	ContentBackground.Size = UDim2.new(1, 0, 1, 0)
+	ContentBackground.ZIndex = 1
+
+	ContentCorner.CornerRadius = UDim.new(0, 6)
+	ContentCorner.Parent = ContentBackground
+
 	local FadeFrame = Instance.new("Frame")
 
 	FadeFrame.Name = Pear:RandomString()
@@ -6489,9 +6505,15 @@ function Pear:Loader(Config: Loader)
 		TextTransparency = 0
 	})
 
-	Pear:CreateAnimation(NameLabel,revealTime,nil,{
+	local nameTween = Pear:CreateAnimation(NameLabel,revealTime,nil,{
 		TextTransparency = 0
-	}).Completed:Wait();
+	})
+
+	Pear:CreateAnimation(ContentBackground,revealTime,nil,{
+		BackgroundTransparency = 0.6
+	})
+
+	nameTween.Completed:Wait();
 
 	if holdTime > 0 then
 		task.wait(holdTime)
@@ -6518,6 +6540,9 @@ function Pear:Loader(Config: Loader)
 	Pear:CreateAnimation(content,fadeTime,nil,{
 		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
+	})
+	Pear:CreateAnimation(ContentBackground,fadeTime,nil,{
+		BackgroundTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
