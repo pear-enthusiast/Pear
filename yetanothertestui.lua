@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-3
+miw
 --]]
 
 -- Export Types --
@@ -6425,14 +6425,14 @@ function Pear:Loader(Config: Loader)
 	local FadeFrame = Instance.new("Frame")
 
 	FadeFrame.Name = Pear:RandomString()
-	FadeFrame.Parent = Loader
+	FadeFrame.Parent = reveal
 	FadeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 	FadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
 	FadeFrame.BackgroundTransparency = 1
 	FadeFrame.BorderSizePixel = 0
 	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	FadeFrame.Size = UDim2.new(1, 0, 1, 0)
-	FadeFrame.ZIndex = 0
+	FadeFrame.Size = UDim2.new(0, 0, 0, 0)
+	FadeFrame.ZIndex = 1
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6461,6 +6461,19 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
 
+	local GlowImage = Instance.new("ImageLabel")
+	GlowImage.Name = Pear:RandomString()
+	GlowImage.Parent = content
+	GlowImage.BackgroundTransparency = 1.000
+	GlowImage.AnchorPoint = Vector2.new(0.5, 0.5)
+	GlowImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+	GlowImage.Size = UDim2.new(0, contentWidth * 1.7, 0, contentHeight * 2)
+	GlowImage.Image = "rbxasset://textures/glow.png"
+	GlowImage.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	GlowImage.ImageTransparency = 1
+	GlowImage.ScaleType = Enum.ScaleType.Fit
+	GlowImage.ZIndex = 1
+
 	local dropTime = 0.45
 	local revealTime = 0.45
 	local fadeTime = 0.35
@@ -6468,9 +6481,6 @@ function Pear:Loader(Config: Loader)
 
 	local dropTween = Pear:CreateAnimation(reveal,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
-	})
-	Pear:CreateAnimation(FadeFrame, dropTime, nil, {
-		BackgroundTransparency = 0.5
 	})
 	dropTween.Completed:Wait();
 
@@ -6486,6 +6496,10 @@ function Pear:Loader(Config: Loader)
 	Pear:CreateAnimation(content,revealTime,nil,{
 		Position = UDim2.new(0, contentShift, 0.5, 0),
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
+	})
+
+	Pear:CreateAnimation(GlowImage,revealTime,nil,{
+		ImageTransparency = 0.65
 	})
 
 	Pear:CreateAnimation(IconLabel,revealTime,nil,{
@@ -6514,6 +6528,10 @@ function Pear:Loader(Config: Loader)
 		TextTransparency = 1
 	})
 
+	Pear:CreateAnimation(GlowImage,fadeTime,nil,{
+		ImageTransparency = 1
+	})
+
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
 		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
 	})
@@ -6521,9 +6539,6 @@ function Pear:Loader(Config: Loader)
 	Pear:CreateAnimation(content,fadeTime,nil,{
 		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
-	})
-	Pear:CreateAnimation(FadeFrame, fadeTime, nil, {
-		BackgroundTransparency = 1
 	})
 
 	task.wait(fadeTime + 0.05);
