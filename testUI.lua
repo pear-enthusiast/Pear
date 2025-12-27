@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7
+7se
 --]]
 
 -- Export Types --
@@ -6391,7 +6391,6 @@ function Pear:Loader(Config: Loader)
 	local content = Instance.new("Frame")
 	local IconLabel = Instance.new("TextLabel")
 	local NameLabel = Instance.new("TextLabel")
-
 	Loader.Name = Pear:RandomString()
 	Loader.Parent = CoreGui
 	Loader.IgnoreGuiInset = true
@@ -6423,37 +6422,36 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	-- soft "radial cloud" behind the intro text (NOT clipped by reveal)
-	-- NOTE: Roblox doesn't support native radial UIGradient, so we use a radial-gradient image. 
-	-- If this asset ever gets deleted/moderated, swap the id for another radial gradient decal from the creator store.
-	local glowAsset = "rbxassetid://284205404" -- "Gradient Circle" 
-	local GlowOuter = Instance.new("ImageLabel")
-	GlowOuter.Name = Pear:RandomString()
-	GlowOuter.Parent = Loader
-	GlowOuter.AnchorPoint = Vector2.new(0.5, 0.5)
-	GlowOuter.BackgroundTransparency = 1
-	GlowOuter.BorderSizePixel = 0
-	GlowOuter.Position = reveal.Position
-	GlowOuter.Size = UDim2.new(0, 0, 0, 0)
-	GlowOuter.ZIndex = 1
-	GlowOuter.Image = glowAsset
-	GlowOuter.ScaleType = Enum.ScaleType.Stretch
-	GlowOuter.ImageColor3 = Color3.new(0, 0, 0)
-	GlowOuter.ImageTransparency = 1
+	local GlowGroup = Instance.new("CanvasGroup")
 
-	local GlowInner = Instance.new("ImageLabel")
-	GlowInner.Name = Pear:RandomString()
-	GlowInner.Parent = Loader
-	GlowInner.AnchorPoint = Vector2.new(0.5, 0.5)
-	GlowInner.BackgroundTransparency = 1
-	GlowInner.BorderSizePixel = 0
-	GlowInner.Position = reveal.Position
-	GlowInner.Size = UDim2.new(0, 0, 0, 0)
-	GlowInner.ZIndex = 2
-	GlowInner.Image = glowAsset
-	GlowInner.ScaleType = Enum.ScaleType.Stretch
-	GlowInner.ImageColor3 = Color3.new(0, 0, 0)
-	GlowInner.ImageTransparency = 1
+	GlowGroup.Name = Pear:RandomString()
+	GlowGroup.Parent = Loader
+	GlowGroup.AnchorPoint = Vector2.new(0.5, 0.5)
+	GlowGroup.BackgroundTransparency = 1
+	GlowGroup.GroupTransparency = 1
+	GlowGroup.Position = UDim2.new(0.5, 0, 0, -contentHeight)
+	GlowGroup.Size = UDim2.new(0, 0, 0, 0)
+	GlowGroup.ZIndex = 1
+	GlowGroup.Active = false
+
+	-- soft "cloud" glow layers (stacked ovals so it looks radial-ish, not a box)
+	local glowLayers = 6
+	for i = 1, glowLayers do
+		local layer = Instance.new("Frame")
+		layer.Name = Pear:RandomString()
+		layer.Parent = GlowGroup
+		layer.AnchorPoint = Vector2.new(0.5, 0.5)
+		layer.Position = UDim2.new(0.5, 0, 0.5, 0)
+		layer.Size = UDim2.new(1, (i * 10) * Config.Scale, 1, (i * 10) * Config.Scale)
+		layer.BackgroundColor3 = Color3.new(0, 0, 0)
+		layer.BackgroundTransparency = 0.92 - (i * 0.06) -- inner = darker, outer = lighter
+		layer.BorderSizePixel = 0
+		layer.ZIndex = 1
+
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(1, 0)
+		c.Parent = layer
+	end
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6487,48 +6485,43 @@ function Pear:Loader(Config: Loader)
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
-	-- drop in (keep glow moving with it)
-	local targetPos = UDim2.new(0.5, 0, 0.5, 0)
+	local dropTween = Pear:CreateAnimation(reveal,dropTime,nil,{
+		Position = UDim2.new(0.5, 0, 0.5, 0)
+	})
 
-	local dropTween = Pear:CreateAnimation(reveal, dropTime, nil, { Position = targetPos })
-	Pear:CreateAnimation(GlowOuter, dropTime, nil, { Position = targetPos })
-	Pear:CreateAnimation(GlowInner, dropTime, nil, { Position = targetPos })
+	Pear:CreateAnimation(GlowGroup,dropTime,nil,{
+		Position = UDim2.new(0.5, 0, 0.5, 0)
+	})
 	dropTween.Completed:Wait();
-
 	local horizontalShift = 8 * Config.Scale
 	local contentShift = horizontalShift + revealPadding
 	local revealWidth = contentWidth + (contentShift * 2)
+	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
 
-	Pear:CreateAnimation(reveal, revealTime, nil, {
+
+	local glowW = revealWidth + (revealPadding * 6)
+	local glowH = math.floor(contentHeight * 2.2)
+	Pear:CreateAnimation(reveal,revealTime,nil,{
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
-	Pear:CreateAnimation(content, revealTime, nil, {
+	Pear:CreateAnimation(content,revealTime,nil,{
 		Position = UDim2.new(0, contentShift, 0.5, 0),
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
 	})
 
-	-- compute oval glow sizes (stretched across the whole text)
-	local glowW = revealWidth + (revealPadding * 3)
-	local glowH = math.floor(contentHeight * 1.9)
 
-	local outerW = math.floor(glowW * 1.35)
-	local outerH = math.floor(glowH * 1.35)
-
-	-- fade/scale in glow (radial -> looks like a soft cloud, not a rectangle)
-	Pear:CreateAnimation(GlowOuter, revealTime, nil, {
-		Size = UDim2.new(0, outerW, 0, outerH),
-		ImageTransparency = 0.85
-	})
-
-	Pear:CreateAnimation(GlowInner, revealTime, nil, {
+	Pear:CreateAnimation(GlowGroup,revealTime,nil,{
 		Size = UDim2.new(0, glowW, 0, glowH),
-		ImageTransparency = 0.70
+		GroupTransparency = 0
+	})
+	Pear:CreateAnimation(IconLabel,revealTime,nil,{
+		TextTransparency = 0
 	})
 
-	Pear:CreateAnimation(IconLabel, revealTime, nil, { TextTransparency = 0 })
-
-	Pear:CreateAnimation(NameLabel, revealTime, nil, { TextTransparency = 0 }).Completed:Wait();
+	Pear:CreateAnimation(NameLabel,revealTime,nil,{
+		TextTransparency = 0
+	}).Completed:Wait();
 
 	if holdTime > 0 then
 		task.wait(holdTime)
@@ -6540,24 +6533,24 @@ function Pear:Loader(Config: Loader)
 	local expandedContentWidth = contentWidth * fadeExpand
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
-	Pear:CreateAnimation(IconLabel, fadeTime, nil, { TextTransparency = 1 })
-	Pear:CreateAnimation(NameLabel, fadeTime, nil, { TextTransparency = 1 })
-
-	-- fade/expand glow out with the text (gives that "radiant" feel)
-	Pear:CreateAnimation(GlowOuter, fadeTime, nil, {
-		ImageTransparency = 1,
-		Size = UDim2.new(0, math.floor(outerW * 1.08), 0, math.floor(outerH * 1.08))
-	})
-	Pear:CreateAnimation(GlowInner, fadeTime, nil, {
-		ImageTransparency = 1,
-		Size = UDim2.new(0, math.floor(glowW * 1.08), 0, math.floor(glowH * 1.08))
+	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
+		TextTransparency = 1
 	})
 
-	Pear:CreateAnimation(reveal, fadeTime, nil, {
+	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
+		TextTransparency = 1
+	})
+
+
+	Pear:CreateAnimation(GlowGroup,fadeTime,nil,{
+		Size = UDim2.new(0, glowW * 1.10, 0, glowH * 1.10),
+		GroupTransparency = 1
+	})
+	Pear:CreateAnimation(reveal,fadeTime,nil,{
 		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
 	})
 
-	Pear:CreateAnimation(content, fadeTime, nil, {
+	Pear:CreateAnimation(content,fadeTime,nil,{
 		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
 	})
