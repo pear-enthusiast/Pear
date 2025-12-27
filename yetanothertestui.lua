@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7
+lelleleelelelele
 --]]
 
 -- Export Types --
@@ -6423,7 +6423,7 @@ function Pear:Loader(Config: Loader)
 	GlowHolder.BorderSizePixel = 0
 	GlowHolder.Position = reveal.Position
 	GlowHolder.Size = UDim2.new(0, 0, 0, 0)
-	GlowHolder.ZIndex = 2
+	GlowHolder.ZIndex = 1
 
 	content.Name = Pear:RandomString()
 	content.Parent = reveal
@@ -6437,7 +6437,7 @@ function Pear:Loader(Config: Loader)
 	-- soft dark "cloud" glow behind the intro text (no box, no borders)
 	local GlowLayers = {}
 	do
-		local layers = 7 -- more layers = smoother falloff
+		local layers = 12 -- more layers = smoother falloff
 		for i = 1, layers do
 			local g = Instance.new("Frame")
 			g.Name = Pear:RandomString()
@@ -6448,7 +6448,7 @@ function Pear:Loader(Config: Loader)
 			g.BorderSizePixel = 0
 			g.Position = UDim2.new(0, 0, 0, 0)
 			g.Size = UDim2.new(0, 0, 0, 0)
-			g.ZIndex = 2
+			g.ZIndex = 1
 
 			local cr = Instance.new("UICorner")
 			cr.CornerRadius = UDim.new(1, 0)
@@ -6506,10 +6506,10 @@ IconLabel.Name = Pear:RandomString()
 	-- animate the soft glow in (radial-ish via layered ovals)
 	local glowBaseW = revealWidth + (revealPadding * 2)
 	local glowBaseH = math.floor(contentHeight * 1.55)
-	local glowStepW = 18 * Config.Scale
-	local glowStepH = 10 * Config.Scale
-	local glowMin = 0.55 -- inner (darker)
-	local glowMax = 0.92 -- outer (lighter)
+	local glowStepW = 14 * Config.Scale
+	local glowStepH = 8 * Config.Scale
+	local glowMin = 0.72 -- inner (darker)
+	local glowMax = 0.97 -- outer (lighter)
 	local glowCount = #GlowLayers
 
 	for i, g in ipairs(GlowLayers) do
