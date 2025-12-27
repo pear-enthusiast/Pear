@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-67s
+sickssayben
 --]]
 
 -- Export Types --
@@ -6433,7 +6433,7 @@ function Pear:Loader(Config: Loader)
 	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 	FadeFrame.Size = UDim2.fromScale(1, 1)
 	FadeFrame.ZIndex = 1
-	FadeFrame.Image = "rbxassetid://92188801209892"
+	FadeFrame.Image = "rbxassetid://137712594011438"
 	FadeFrame.ImageColor3 = Color3.new(0, 0, 0)
 	FadeFrame.ImageTransparency = 1
 	FadeFrame.ScaleType = Enum.ScaleType.Stretch
