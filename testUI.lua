@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-glitter
+7
 --]]
 
 -- Export Types --
@@ -6467,7 +6467,7 @@ function Pear:Loader(Config: Loader)
 	GlowImage.BackgroundTransparency = 1.000
 	GlowImage.AnchorPoint = Vector2.new(0.5, 0.5)
 	GlowImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-	GlowImage.Size = UDim2.new(0, contentWidth * 2.6, 0, contentHeight * 2.2)
+	GlowImage.Size = UDim2.new(0, contentWidth * 2.2, 0, contentHeight * 1.8)
 	GlowImage.Image = "rbxasset://textures/glow.png"
 	GlowImage.ImageColor3 = Color3.fromRGB(0, 0, 0)
 	GlowImage.ImageTransparency = 1
