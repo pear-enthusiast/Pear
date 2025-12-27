@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7se
+cancer
 --]]
 
 -- Export Types --
@@ -1186,6 +1186,50 @@ function Pear:CreateAnimation(Instance: Instance , Time: number , Style : Enum.E
 	Tween:Play();
 
 	return Tween;
+end;
+
+
+-- Text outline (readability / subtle black glow)
+function Pear:_ApplyTextOutlineTo(obj: Instance, strokeColor: Color3, strokeTransparency: number)
+	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+		pcall(function()
+			(obj :: any).TextStrokeColor3 = strokeColor;
+		end);
+
+		pcall(function()
+			-- Only force a stroke if it's currently default/hidden
+			if (obj :: any).TextStrokeTransparency == 1 then
+				(obj :: any).TextStrokeTransparency = strokeTransparency;
+			end;
+		end);
+	end;
+end;
+
+function Pear:ApplyTextOutline(root: Instance, strokeColor: Color3?, strokeTransparency: number?)
+	local sColor: Color3 = strokeColor or Color3.new(0, 0, 0);
+	local sTrans: number = strokeTransparency or 0.80;
+
+	Pear:_ApplyTextOutlineTo(root, sColor, sTrans);
+
+	for _, d in ipairs(root:GetDescendants()) do
+		Pear:_ApplyTextOutlineTo(d, sColor, sTrans);
+	end;
+end;
+
+function Pear:AutoTextOutline(root: Instance, strokeColor: Color3?, strokeTransparency: number?)
+	Pear:ApplyTextOutline(root, strokeColor, strokeTransparency);
+
+	Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS = Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS or {};
+	if Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS[root] then
+		return;
+	end;
+
+	local sColor: Color3 = strokeColor or Color3.new(0, 0, 0);
+	local sTrans: number = strokeTransparency or 0.80;
+
+	Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS[root] = root.DescendantAdded:Connect(function(obj: Instance)
+		Pear:_ApplyTextOutlineTo(obj, sColor, sTrans);
+	end);
 end;
 
 function Pear:NewInput(Frame : Frame , Callback : () -> ()) : TextButton
@@ -6373,6 +6417,15 @@ function Pear.new(Window: Window)
 		ToggleUI(b);
 	end;
 
+
+-- Make all text readable (subtle black stroke), including things created later.
+Pear:AutoTextOutline(Pearwin, Color3.new(0, 0, 0), 0.80);
+
+-- Keep the big pear watermark clean (no stroke)
+pcall(function()
+	PearBackground.TextStrokeTransparency = 1;
+end);
+
 	ToggleUI(true);
 
 	return Fatal;
@@ -6422,36 +6475,17 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	local GlowGroup = Instance.new("CanvasGroup")
+	local FadeFrame = Instance.new("Frame")
 
-	GlowGroup.Name = Pear:RandomString()
-	GlowGroup.Parent = Loader
-	GlowGroup.AnchorPoint = Vector2.new(0.5, 0.5)
-	GlowGroup.BackgroundTransparency = 1
-	GlowGroup.GroupTransparency = 1
-	GlowGroup.Position = UDim2.new(0.5, 0, 0, -contentHeight)
-	GlowGroup.Size = UDim2.new(0, 0, 0, 0)
-	GlowGroup.ZIndex = 1
-	GlowGroup.Active = false
-
-	-- soft "cloud" glow layers (stacked ovals so it looks radial-ish, not a box)
-	local glowLayers = 6
-	for i = 1, glowLayers do
-		local layer = Instance.new("Frame")
-		layer.Name = Pear:RandomString()
-		layer.Parent = GlowGroup
-		layer.AnchorPoint = Vector2.new(0.5, 0.5)
-		layer.Position = UDim2.new(0.5, 0, 0.5, 0)
-		layer.Size = UDim2.new(1, (i * 10) * Config.Scale, 1, (i * 10) * Config.Scale)
-		layer.BackgroundColor3 = Color3.new(0, 0, 0)
-		layer.BackgroundTransparency = 0.92 - (i * 0.06) -- inner = darker, outer = lighter
-		layer.BorderSizePixel = 0
-		layer.ZIndex = 1
-
-		local c = Instance.new("UICorner")
-		c.CornerRadius = UDim.new(1, 0)
-		c.Parent = layer
-	end
+	FadeFrame.Name = Pear:RandomString()
+	FadeFrame.Parent = reveal
+	FadeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	FadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+	FadeFrame.BackgroundTransparency = 1
+	FadeFrame.BorderSizePixel = 0
+	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	FadeFrame.Size = UDim2.new(0, 0, 0, 0)
+	FadeFrame.ZIndex = 1
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6480,6 +6514,11 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
 
+
+
+-- Outline the intro text so it doesn't blend into the scene
+Pear:ApplyTextOutline(Loader, Color3.new(0, 0, 0), 0.80);
+
 	local dropTime = 0.45
 	local revealTime = 0.45
 	local fadeTime = 0.35
@@ -6488,19 +6527,13 @@ function Pear:Loader(Config: Loader)
 	local dropTween = Pear:CreateAnimation(reveal,dropTime,nil,{
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
-
-	Pear:CreateAnimation(GlowGroup,dropTime,nil,{
-		Position = UDim2.new(0.5, 0, 0.5, 0)
-	})
 	dropTween.Completed:Wait();
+
 	local horizontalShift = 8 * Config.Scale
 	local contentShift = horizontalShift + revealPadding
 	local revealWidth = contentWidth + (contentShift * 2)
 	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
 
-
-	local glowW = revealWidth + (revealPadding * 6)
-	local glowH = math.floor(contentHeight * 2.2)
 	Pear:CreateAnimation(reveal,revealTime,nil,{
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
@@ -6510,11 +6543,6 @@ function Pear:Loader(Config: Loader)
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
 	})
 
-
-	Pear:CreateAnimation(GlowGroup,revealTime,nil,{
-		Size = UDim2.new(0, glowW, 0, glowH),
-		GroupTransparency = 0
-	})
 	Pear:CreateAnimation(IconLabel,revealTime,nil,{
 		TextTransparency = 0
 	})
@@ -6541,11 +6569,6 @@ function Pear:Loader(Config: Loader)
 		TextTransparency = 1
 	})
 
-
-	Pear:CreateAnimation(GlowGroup,fadeTime,nil,{
-		Size = UDim2.new(0, glowW * 1.10, 0, glowH * 1.10),
-		GroupTransparency = 1
-	})
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
 		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
 	})
