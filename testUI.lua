@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-1
+67s
 --]]
 
 -- Export Types --
@@ -6405,7 +6405,7 @@ function Pear:Loader(Config: Loader)
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
 
-	local revealHeight = contentHeight + (revealPadding * 3) -- extra top/bottom padding for the glow
+	local revealHeight = contentHeight + (revealPadding * 8)
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
 	reveal.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -6433,7 +6433,7 @@ function Pear:Loader(Config: Loader)
 	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 	FadeFrame.Size = UDim2.fromScale(1, 1)
 	FadeFrame.ZIndex = 1
-	FadeFrame.Image = "rbxassetid://72049378776621" -- intro glow / text backdrop (black)
+	FadeFrame.Image = "rbxassetid://72049378776621"
 	FadeFrame.ImageColor3 = Color3.new(0, 0, 0)
 	FadeFrame.ImageTransparency = 1
 	FadeFrame.ScaleType = Enum.ScaleType.Stretch
