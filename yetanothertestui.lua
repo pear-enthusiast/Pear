@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-dih
+puhdih
 --]]
 
 -- Export Types --
@@ -6409,7 +6409,7 @@ function Pear:Loader(Config: Loader)
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
 	reveal.AnchorPoint = Vector2.new(0.5, 0.5)
-	reveal.BackgroundTransparency = 1.000
+	reveal.BackgroundTransparency = 1
 	reveal.ClipsDescendants = true
 	reveal.Position = UDim2.new(0.5, 0, 0, -contentHeight)
 	reveal.Size = UDim2.new(0, 0, 0, 0)
@@ -6418,32 +6418,14 @@ function Pear:Loader(Config: Loader)
 	content.Name = Pear:RandomString()
 	content.Parent = reveal
 	content.AnchorPoint = Vector2.new(0, 0.5)
-	content.BackgroundTransparency = 1.000
+	content.BackgroundTransparency = 1
 	content.Position = UDim2.new(0, 0, 0.5, 0)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	-- black "cloud" behind the intro text (we reuse FadeFrame for this)
-	local FadeFrame = Instance.new("Frame")
-
-	FadeFrame.Name = Pear:RandomString()
-	FadeFrame.Parent = reveal
-	FadeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	FadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-	FadeFrame.BackgroundTransparency = 1
-	FadeFrame.BorderSizePixel = 0
-	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	FadeFrame.Size = UDim2.new(0, 0, 0, 0)
-	FadeFrame.ZIndex = 1
-
-	-- make it pill / oval shaped so it feels like a soft glow, not a box
-	local GlowCorner = Instance.new("UICorner")
-	GlowCorner.CornerRadius = UDim.new(1, 0)
-	GlowCorner.Parent = FadeFrame
-
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
-	IconLabel.BackgroundTransparency = 1.000
+	IconLabel.BackgroundTransparency = 1
 	IconLabel.Size = UDim2.new(0, iconBounds.X, 0, contentHeight)
 	IconLabel.Font = Config.Font
 	IconLabel.Text = tostring(Config.Icon)
@@ -6452,11 +6434,11 @@ function Pear:Loader(Config: Loader)
 	IconLabel.TextTransparency = 1
 	IconLabel.TextXAlignment = Enum.TextXAlignment.Left
 	IconLabel.TextYAlignment = Enum.TextYAlignment.Center
-	IconLabel.ZIndex = 2
+	IconLabel.ZIndex = 4
 
 	NameLabel.Name = Pear:RandomString()
 	NameLabel.Parent = content
-	NameLabel.BackgroundTransparency = 1.000
+	NameLabel.BackgroundTransparency = 1
 	NameLabel.Position = UDim2.new(0, iconBounds.X + spacing, 0, 0)
 	NameLabel.Size = UDim2.new(0, nameBounds.X, 0, contentHeight)
 	NameLabel.Font = Config.Font
@@ -6466,52 +6448,86 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextTransparency = 1
 	NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
-	NameLabel.ZIndex = 2
+	NameLabel.ZIndex = 4
+
+	-- soft "cloud" glow behind the intro text (fake radial shadow using stacked text)
+	local glowLabels = {}
+	local baseOffset = math.max(1, math.floor(1.5 * Config.Scale))
+
+	local glowSpec = {
+		{Vector2.new(0, 0),                0.55}, -- center, strongest
+		{Vector2.new(baseOffset, 0),       0.6},
+		{Vector2.new(-baseOffset, 0),      0.6},
+		{Vector2.new(2 * baseOffset, 0),   0.75},
+		{Vector2.new(-2 * baseOffset, 0),  0.75},
+
+		{Vector2.new(0, baseOffset),       0.65},
+		{Vector2.new(0, -baseOffset),      0.65},
+		{Vector2.new(baseOffset, baseOffset),    0.7},
+		{Vector2.new(-baseOffset, baseOffset),   0.7},
+		{Vector2.new(baseOffset, -baseOffset),   0.7},
+		{Vector2.new(-baseOffset, -baseOffset),  0.7},
+	}
+
+	local function addGlowFor(label)
+		for _, spec in ipairs(glowSpec) do
+			local offset, targetAlpha = spec[1], spec[2]
+			local g = label:Clone()
+			g.Name = Pear:RandomString()
+			g.TextColor3 = Color3.new(0, 0, 0)
+			g.TextTransparency = 1 -- start invisible, tween in
+			g.BackgroundTransparency = 1
+			g.ZIndex = label.ZIndex - 1
+			g.Position = label.Position + UDim2.fromOffset(offset.X, offset.Y)
+			g.Parent = content
+			table.insert(glowLabels, {label = g, alpha = targetAlpha})
+		end
+	end
+
+	-- glow for both icon and name so the whole thing has a dark "cloud"
+	addGlowFor(IconLabel)
+	addGlowFor(NameLabel)
 
 	local dropTime = 0.45
 	local revealTime = 0.45
 	local fadeTime = 0.35
 	local holdTime = math.max(Config.Duration - (dropTime + revealTime), 0)
 
-	local dropTween = Pear:CreateAnimation(reveal,dropTime,nil,{
+	local dropTween = Pear:CreateAnimation(reveal, dropTime, nil, {
 		Position = UDim2.new(0.5, 0, 0.5, 0)
 	})
-	dropTween.Completed:Wait();
+	dropTween.Completed:Wait()
 
 	local horizontalShift = 8 * Config.Scale
 	local contentShift = horizontalShift + revealPadding
 	local revealWidth = contentWidth + (contentShift * 2)
-	local fadeSize = math.max(revealWidth, contentHeight) * 1.35 -- kept in case you want it later
 
-	-- size the "cloud": wider than the text, a bit taller, so it's an oval band
-	FadeFrame.Size = UDim2.new(
-		0,
-		revealWidth + (revealPadding * 2),
-		0,
-		math.floor(contentHeight * 1.65)
-	)
-
-	Pear:CreateAnimation(reveal,revealTime,nil,{
+	Pear:CreateAnimation(reveal, revealTime, nil, {
 		Size = UDim2.new(0, revealWidth, 0, contentHeight)
 	})
 
-	Pear:CreateAnimation(content,revealTime,nil,{
+	Pear:CreateAnimation(content, revealTime, nil, {
 		Position = UDim2.new(0, contentShift, 0.5, 0),
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
 	})
 
-	-- fade in the soft black glow behind the text
-	Pear:CreateAnimation(FadeFrame,revealTime,nil,{
-		BackgroundTransparency = 0.55 -- black but faint
-	})
-
-	Pear:CreateAnimation(IconLabel,revealTime,nil,{
+	Pear:CreateAnimation(IconLabel, revealTime, nil, {
 		TextTransparency = 0
 	})
 
-	Pear:CreateAnimation(NameLabel,revealTime,nil,{
+	local nameTween = Pear:CreateAnimation(NameLabel, revealTime, nil, {
 		TextTransparency = 0
-	}).Completed:Wait();
+	})
+
+	-- glow fades in with the text
+	for _, data in ipairs(glowLabels) do
+		local g, alpha = data.label, data.alpha
+		Pear:CreateAnimation(g, revealTime, nil, {
+			TextTransparency = alpha
+		})
+	end
+
+	nameTween.Completed:Wait()
 
 	if holdTime > 0 then
 		task.wait(holdTime)
@@ -6523,31 +6539,35 @@ function Pear:Loader(Config: Loader)
 	local expandedContentWidth = contentWidth * fadeExpand
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
-	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
+	Pear:CreateAnimation(IconLabel, fadeTime, nil, {
 		TextTransparency = 1
 	})
 
-	Pear:CreateAnimation(NameLabel,fadeTime,nil,{
+	Pear:CreateAnimation(NameLabel, fadeTime, nil, {
 		TextTransparency = 1
 	})
 
-	-- fade the glow out with the text
-	Pear:CreateAnimation(FadeFrame,fadeTime,nil,{
-		BackgroundTransparency = 1
-	})
+	-- glow fades out with the text
+	for _, data in ipairs(glowLabels) do
+		local g = data.label
+		Pear:CreateAnimation(g, fadeTime, nil, {
+			TextTransparency = 1
+		})
+	end
 
-	Pear:CreateAnimation(reveal,fadeTime,nil,{
+	Pear:CreateAnimation(reveal, fadeTime, nil, {
 		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
 	})
 
-	Pear:CreateAnimation(content,fadeTime,nil,{
+	Pear:CreateAnimation(content, fadeTime, nil, {
 		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
 	})
 
-	task.wait(fadeTime + 0.05);
-	Loader:Destroy();
+	task.wait(fadeTime + 0.05)
+	Loader:Destroy()
 end;
+
 
 
 function Pear:CreateNotifier(): Notifier
