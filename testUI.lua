@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-7
+1
 --]]
 
 -- Export Types --
@@ -6405,12 +6405,13 @@ function Pear:Loader(Config: Loader)
 	local contentHeight = math.max(iconBounds.Y, nameBounds.Y)
 	local revealPadding = 6 * Config.Scale
 
+	local revealHeight = contentHeight + (revealPadding * 3) -- extra top/bottom padding for the glow
 	reveal.Name = Pear:RandomString()
 	reveal.Parent = Loader
 	reveal.AnchorPoint = Vector2.new(0.5, 0.5)
 	reveal.BackgroundTransparency = 1.000
 	reveal.ClipsDescendants = true
-	reveal.Position = UDim2.new(0.5, 0, 0, -contentHeight)
+	reveal.Position = UDim2.new(0.5, 0, 0, -revealHeight)
 	reveal.Size = UDim2.new(0, 0, 0, 0)
 	reveal.ZIndex = 3
 
@@ -6480,7 +6481,7 @@ function Pear:Loader(Config: Loader)
 	local fadeSize = math.max(revealWidth, contentHeight) * 1.35
 
 	Pear:CreateAnimation(reveal,revealTime,nil,{
-		Size = UDim2.new(0, revealWidth, 0, contentHeight)
+		Size = UDim2.new(0, revealWidth, 0, revealHeight)
 	})
 
 	Pear:CreateAnimation(content,revealTime,nil,{
@@ -6506,7 +6507,8 @@ function Pear:Loader(Config: Loader)
 
 	local fadeExpand = 1.08
 	local expandedRevealWidth = revealWidth * fadeExpand
-	local expandedHeight = contentHeight * fadeExpand
+	local expandedRevealHeight = revealHeight * fadeExpand
+	local expandedContentHeight = contentHeight * fadeExpand
 	local expandedContentWidth = contentWidth * fadeExpand
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
 
@@ -6523,11 +6525,11 @@ function Pear:Loader(Config: Loader)
 	})
 
 	Pear:CreateAnimation(reveal,fadeTime,nil,{
-		Size = UDim2.new(0, expandedRevealWidth, 0, expandedHeight)
+		Size = UDim2.new(0, expandedRevealWidth, 0, expandedRevealHeight)
 	})
 
 	Pear:CreateAnimation(content,fadeTime,nil,{
-		Size = UDim2.new(0, expandedContentWidth, 0, expandedHeight),
+		Size = UDim2.new(0, expandedContentWidth, 0, expandedContentHeight),
 		Position = UDim2.new(0, expandedContentShift, 0.5, 0)
 	})
 
