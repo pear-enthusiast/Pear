@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-cancer
+7
 --]]
 
 -- Export Types --
@@ -1186,50 +1186,6 @@ function Pear:CreateAnimation(Instance: Instance , Time: number , Style : Enum.E
 	Tween:Play();
 
 	return Tween;
-end;
-
-
--- Text outline (readability / subtle black glow)
-function Pear:_ApplyTextOutlineTo(obj: Instance, strokeColor: Color3, strokeTransparency: number)
-	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-		pcall(function()
-			(obj :: any).TextStrokeColor3 = strokeColor;
-		end);
-
-		pcall(function()
-			-- Only force a stroke if it's currently default/hidden
-			if (obj :: any).TextStrokeTransparency == 1 then
-				(obj :: any).TextStrokeTransparency = strokeTransparency;
-			end;
-		end);
-	end;
-end;
-
-function Pear:ApplyTextOutline(root: Instance, strokeColor: Color3?, strokeTransparency: number?)
-	local sColor: Color3 = strokeColor or Color3.new(0, 0, 0);
-	local sTrans: number = strokeTransparency or 0.80;
-
-	Pear:_ApplyTextOutlineTo(root, sColor, sTrans);
-
-	for _, d in ipairs(root:GetDescendants()) do
-		Pear:_ApplyTextOutlineTo(d, sColor, sTrans);
-	end;
-end;
-
-function Pear:AutoTextOutline(root: Instance, strokeColor: Color3?, strokeTransparency: number?)
-	Pear:ApplyTextOutline(root, strokeColor, strokeTransparency);
-
-	Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS = Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS or {};
-	if Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS[root] then
-		return;
-	end;
-
-	local sColor: Color3 = strokeColor or Color3.new(0, 0, 0);
-	local sTrans: number = strokeTransparency or 0.80;
-
-	Pear.GLOBAL_ENVIRONMENT.__OUTLINE_CONNS[root] = root.DescendantAdded:Connect(function(obj: Instance)
-		Pear:_ApplyTextOutlineTo(obj, sColor, sTrans);
-	end);
 end;
 
 function Pear:NewInput(Frame : Frame , Callback : () -> ()) : TextButton
@@ -6417,15 +6373,6 @@ function Pear.new(Window: Window)
 		ToggleUI(b);
 	end;
 
-
--- Make all text readable (subtle black stroke), including things created later.
-Pear:AutoTextOutline(Pearwin, Color3.new(0, 0, 0), 0.80);
-
--- Keep the big pear watermark clean (no stroke)
-pcall(function()
-	PearBackground.TextStrokeTransparency = 1;
-end);
-
 	ToggleUI(true);
 
 	return Fatal;
@@ -6475,17 +6422,20 @@ function Pear:Loader(Config: Loader)
 	content.Size = UDim2.new(0, math.floor(contentWidth * 0.9), 0, math.floor(contentHeight * 0.9))
 	content.ZIndex = 2
 
-	local FadeFrame = Instance.new("Frame")
+	local FadeFrame = Instance.new("ImageLabel")
 
 	FadeFrame.Name = Pear:RandomString()
 	FadeFrame.Parent = reveal
 	FadeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	FadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
 	FadeFrame.BackgroundTransparency = 1
 	FadeFrame.BorderSizePixel = 0
 	FadeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	FadeFrame.Size = UDim2.new(0, 0, 0, 0)
+	FadeFrame.Size = UDim2.fromScale(1, 1)
 	FadeFrame.ZIndex = 1
+	FadeFrame.Image = "rbxassetid://72049378776621" -- intro glow / text backdrop (black)
+	FadeFrame.ImageColor3 = Color3.new(0, 0, 0)
+	FadeFrame.ImageTransparency = 1
+	FadeFrame.ScaleType = Enum.ScaleType.Stretch
 
 	IconLabel.Name = Pear:RandomString()
 	IconLabel.Parent = content
@@ -6514,11 +6464,6 @@ function Pear:Loader(Config: Loader)
 	NameLabel.TextYAlignment = Enum.TextYAlignment.Center
 	NameLabel.ZIndex = 2
 
-
-
--- Outline the intro text so it doesn't blend into the scene
-Pear:ApplyTextOutline(Loader, Color3.new(0, 0, 0), 0.80);
-
 	local dropTime = 0.45
 	local revealTime = 0.45
 	local fadeTime = 0.35
@@ -6543,6 +6488,10 @@ Pear:ApplyTextOutline(Loader, Color3.new(0, 0, 0), 0.80);
 		Size = UDim2.new(0, contentWidth, 0, contentHeight)
 	})
 
+	Pear:CreateAnimation(FadeFrame,revealTime,nil,{
+		ImageTransparency = 0.55
+	})
+
 	Pear:CreateAnimation(IconLabel,revealTime,nil,{
 		TextTransparency = 0
 	})
@@ -6560,6 +6509,10 @@ Pear:ApplyTextOutline(Loader, Color3.new(0, 0, 0), 0.80);
 	local expandedHeight = contentHeight * fadeExpand
 	local expandedContentWidth = contentWidth * fadeExpand
 	local expandedContentShift = contentShift - ((expandedContentWidth - contentWidth) * 0.5)
+
+	Pear:CreateAnimation(FadeFrame,fadeTime,nil,{
+		ImageTransparency = 1
+	})
 
 	Pear:CreateAnimation(IconLabel,fadeTime,nil,{
 		TextTransparency = 1
