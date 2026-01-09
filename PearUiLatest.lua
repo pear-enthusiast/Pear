@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-kotakbas
+kotek
 --]]
 
 -- Export Types --
@@ -4142,6 +4142,15 @@ function Pear.new(Window: Window)
 	Window.Name = Window.Name or "Pear";
 	Window.Scale = Window.Scale or UDim2.new(0, 750, 0, 500);
 	Window.Keybind = Window.Keybind or "Insert";
+
+	-- ui toggle keybind runtime state (changeable via settings cog)
+	local __uiKeybind = Window.Keybind
+	if typeof(__uiKeybind) == "string" then
+		__uiKeybind = Enum.KeyCode[__uiKeybind] or Enum.KeyCode.Insert
+	end
+	local __capturingKeybind = false
+	local __keybindButtonRef = nil
+	local __settingsOpen = false
 	Window.Version = tostring(Window.Version or Pear.Version);
 	local windowTitle = Window.Name;
 
@@ -4194,6 +4203,7 @@ function Pear.new(Window: Window)
 	local InfoButton = Instance.new("ImageButton")
 	local SearchButton = Instance.new("ImageButton")
 	local SaveButton = Instance.new("ImageButton")
+	local SettingsButton = Instance.new("ImageButton")
 	local InfoClickEvent = Instance.new("BindableEvent")
 	local __destroyed = false
 	local __collapsed = false
@@ -4433,7 +4443,9 @@ function Pear.new(Window: Window)
 
 	WindowSizeConstraint.Name = Pear:RandomString()
 	WindowSizeConstraint.Parent = FatalFrame
-	WindowSizeConstraint.MinSize = Vector2.new(320, 220)
+	-- minimum size so layout doesn't implode (prevents panel/text overlap)
+	WindowSizeConstraint.MinSize = Vector2.new(680, 260)
+	local __normalMinSize = WindowSizeConstraint.MinSize
 	WindowSizeConstraint.MaxSize = Vector2.new(2000, 2000)
 
 	local function __updateMax()
@@ -4689,6 +4701,7 @@ function Pear.new(Window: Window)
 	MenuFrame.BorderSizePixel = 0
 	MenuFrame.Position = UDim2.new(0, 0, 0, 50)
 	MenuFrame.Size = UDim2.new(1, 0, 1, -82)
+	MenuFrame.ClipsDescendants = true
 
 	Bottom.Name = Pear:RandomString()
 	Bottom.Parent = FatalFrame
@@ -4741,11 +4754,14 @@ function Pear.new(Window: Window)
 	local function __setCollapsed(state)
 		if __destroyed then return end
 
+		local __prevMinSize = WindowSizeConstraint.MinSize
+
 		local function __hideHeavy()
 			MenuFrame.Visible = false
 			Bottom.Visible = false
 			MenuButtonCont.Visible = false
 			UserProfle.Visible = false
+			PearBackground.Visible = false
 		end
 
 		local function __showHeavy()
@@ -4753,6 +4769,7 @@ function Pear.new(Window: Window)
 			Bottom.Visible = true
 			MenuButtonCont.Visible = true
 			UserProfle.Visible = true
+			PearBackground.Visible = true
 		end
 
 		if state and (not __collapsed) then
@@ -4769,6 +4786,11 @@ function Pear.new(Window: Window)
 			local fullW = __lastSize.X.Offset
 			local textW = HeaderText.TextBounds.X
 			local targetW = math.clamp(math.floor(textW + 95), 190, fullW)
+
+			-- allow shrinking below normal min size while collapsed
+			__prevMinSize = WindowSizeConstraint.MinSize
+			WindowSizeConstraint.MinSize = Vector2.new(190, headerH)
+			FatalFrame.ClipsDescendants = true
 
 			-- 1) roll up (height only)
 			local t1 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime, {
@@ -4796,6 +4818,9 @@ function Pear.new(Window: Window)
 			__collapsed = false
 
 			MinimizeButton.Text = "-"
+			-- restore normal min size before expanding
+			WindowSizeConstraint.MinSize = __normalMinSize
+			FatalFrame.ClipsDescendants = false
 
 			local headerH = Header.Size.Y.Offset
 			local fullW = (__lastSize and __lastSize.X and __lastSize.X.Offset) or (__lastFullSize and __lastFullSize.X.Offset) or FatalFrame.Size.X.Offset
@@ -4822,6 +4847,8 @@ function Pear.new(Window: Window)
 					if __destroyed then return end
 					if not __collapsed then
 						__showHeavy()
+						WindowSizeConstraint.MinSize = __normalMinSize
+						FatalFrame.ClipsDescendants = false
 					end
 				end)
 			end)
@@ -4838,13 +4865,25 @@ function Pear.new(Window: Window)
 	end)
 
 KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
-		if not istyping then
-			if input.KeyCode == Window.Keybind or input.KeyCode.Name == Window.Keybind then
-				Fatal.Toggle = not Fatal.Toggle;
+		if istyping then return end
 
-				ToggleUI(Fatal.Toggle);
-			end;
+		-- capture new keybind from the settings cog
+		if __capturingKeybind then
+			if input.KeyCode and input.KeyCode ~= Enum.KeyCode.Unknown then
+				__uiKeybind = input.KeyCode
+				Window.Keybind = input.KeyCode.Name
+				if __keybindButtonRef then
+					__keybindButtonRef.Text = input.KeyCode.Name
+				end
+			end
+			__capturingKeybind = false
+			return
 		end
+
+		if input.KeyCode == __uiKeybind then
+			Fatal.Toggle = not Fatal.Toggle;
+			ToggleUI(Fatal.Toggle);
+		end;
 	end)
 
 	function Fatal:SetUsername(name: string)
@@ -6022,7 +6061,8 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		InfoButton.Position = UDim2.new(1, -5, 0.5, 0)
 		InfoButton.Size = UDim2.new(0, 16, 0, 16)
 		InfoButton.ZIndex = 4
-		InfoButton.Image = "rbxassetid://10734898934"
+		InfoButton.Image = Pear:GetIcon("move-diagonal")
+		InfoButton.ImageColor3 = Color3.fromRGB(229, 229, 229)
 		InfoButton.ImageTransparency = 0.500
 
 		SearchButton.Name = Pear:RandomString()
@@ -6051,6 +6091,20 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		SaveButton.Image = "rbxassetid://10734941499"
 		SaveButton.ImageTransparency = 0.500
 
+		SettingsButton.Name = Pear:RandomString()
+		SettingsButton.Parent = Bottom
+		SettingsButton.AnchorPoint = Vector2.new(0, 0.5)
+		SettingsButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		SettingsButton.BackgroundTransparency = 1.000
+		SettingsButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		SettingsButton.BorderSizePixel = 0
+		SettingsButton.Position = UDim2.new(0, 60, 0.5, 0)
+		SettingsButton.Size = UDim2.new(0, 16, 0, 16)
+		SettingsButton.ZIndex = 4
+		SettingsButton.Image = Pear:GetIcon("settings")
+		SettingsButton.ImageColor3 = Color3.fromRGB(229, 229, 229)
+		SettingsButton.ImageTransparency = 0.500
+
 		Pear:CreateHover(SaveButton,function(bool)
 			if bool then
 				Pear:CreateAnimation(SaveButton,0.5,{
@@ -6061,6 +6115,14 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 					ImageTransparency = 0.5
 				})
 			end	
+		end);
+
+		Pear:CreateHover(SettingsButton,function(bool)
+			if bool then
+				Pear:CreateAnimation(SettingsButton,0.5,{ ImageTransparency = 0.1 })
+			else
+				Pear:CreateAnimation(SettingsButton,0.5,{ ImageTransparency = 0.5 })
+			end
 		end);
 
 		Pear:CreateHover(InfoButton,function(bool)
@@ -6108,6 +6170,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		local __resizeStartPos = nil -- Vector2 (mouse location)
 		local __resizeStartPosV3 = nil -- Vector3 (input.Position for touch)
 		local __resizeStartAbsSize = nil -- Vector2 (AbsoluteSize)
+		local __resizeStartFramePos = nil -- UDim2
 		local __resizeInput = nil
 		local __resizeMoved = false
 
@@ -6135,7 +6198,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
 				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
 
+				local dx = newX - __resizeStartAbsSize.X
 				FatalFrame.Size = UDim2.new(0, newX, 0, newY)
+				FatalFrame.Position = UDim2.new(__resizeStartFramePos.X.Scale, __resizeStartFramePos.X.Offset + (dx/2), __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
 			elseif __resizeInput and input == __resizeInput then
 				local deltaV3 = input.Position - __resizeStartPosV3
 				local delta = Vector2.new(deltaV3.X, deltaV3.Y)
@@ -6150,7 +6215,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
 				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
 
+				local dx = newX - __resizeStartAbsSize.X
 				FatalFrame.Size = UDim2.new(0, newX, 0, newY)
+				FatalFrame.Position = UDim2.new(__resizeStartFramePos.X.Scale, __resizeStartFramePos.X.Offset + (dx/2), __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
 			end
 		end)
 
@@ -6162,6 +6229,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				__resizeStartPosV3 = input.Position
 				__resizeStartPos = UserInputService:GetMouseLocation()
 				__resizeStartAbsSize = FatalFrame.AbsoluteSize
+				__resizeStartFramePos = FatalFrame.Position
 				__resizeInput = input
 
 				local endedConn
@@ -6189,6 +6257,98 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		function Fatal:AddInfo(callback)
 			InfoClickEvent.Event:Connect(callback);
 		end;
+		-- settings (UI keybind)
+		local SettingsFrame = Instance.new("Frame")
+		local SettingsStroke = Instance.new("UIStroke")
+		local SettingsCorner = Instance.new("UICorner")
+		local SettingsTitle = Instance.new("TextLabel")
+		local KeybindTitle = Instance.new("TextLabel")
+		local KeybindButton = Instance.new("TextButton")
+		local KeybindCorner = Instance.new("UICorner")
+		local KeybindStroke = Instance.new("UIStroke")
+
+		SettingsFrame.Name = Pear:RandomString()
+		SettingsFrame.Parent = Bottom
+		SettingsFrame.AnchorPoint = Vector2.new(0, 1)
+		SettingsFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+		SettingsFrame.BorderSizePixel = 0
+		SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
+		SettingsFrame.Size = UDim2.new(0, 210, 0, 78)
+		SettingsFrame.Visible = false
+		SettingsFrame.ZIndex = 20
+
+		SettingsCorner.CornerRadius = UDim.new(0, 6)
+		SettingsCorner.Parent = SettingsFrame
+
+		SettingsStroke.Transparency = 0.90
+		SettingsStroke.Thickness = 2
+		SettingsStroke.Parent = SettingsFrame
+
+		SettingsTitle.Name = Pear:RandomString()
+		SettingsTitle.Parent = SettingsFrame
+		SettingsTitle.BackgroundTransparency = 1
+		SettingsTitle.Position = UDim2.new(0, 10, 0, 8)
+		SettingsTitle.Size = UDim2.new(1, -20, 0, 16)
+		SettingsTitle.ZIndex = 21
+		SettingsTitle.Font = Enum.Font.GothamBold
+		SettingsTitle.Text = "Settings"
+		SettingsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+		SettingsTitle.TextSize = 14
+		SettingsTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+		KeybindTitle.Name = Pear:RandomString()
+		KeybindTitle.Parent = SettingsFrame
+		KeybindTitle.BackgroundTransparency = 1
+		KeybindTitle.Position = UDim2.new(0, 10, 0, 32)
+		KeybindTitle.Size = UDim2.new(0, 105, 0, 16)
+		KeybindTitle.ZIndex = 21
+		KeybindTitle.Font = Enum.Font.Gotham
+		KeybindTitle.Text = "UI keybind:"
+		KeybindTitle.TextColor3 = Color3.fromRGB(210, 210, 210)
+		KeybindTitle.TextSize = 12
+		KeybindTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+		KeybindButton.Name = Pear:RandomString()
+		KeybindButton.Parent = SettingsFrame
+		KeybindButton.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
+		KeybindButton.BorderSizePixel = 0
+		KeybindButton.Position = UDim2.new(1, -10, 0, 28)
+		KeybindButton.AnchorPoint = Vector2.new(1, 0)
+		KeybindButton.Size = UDim2.new(0, 85, 0, 22)
+		KeybindButton.ZIndex = 21
+		KeybindButton.Font = Enum.Font.Gotham
+		KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		KeybindButton.TextSize = 12
+		KeybindButton.AutoButtonColor = false
+
+		KeybindCorner.CornerRadius = UDim.new(0, 4)
+		KeybindCorner.Parent = KeybindButton
+
+		KeybindStroke.Transparency = 0.92
+		KeybindStroke.Thickness = 1
+		KeybindStroke.Parent = KeybindButton
+
+		__keybindButtonRef = KeybindButton
+		pcall(function()
+			if typeof(__uiKeybind) == "EnumItem" then
+				KeybindButton.Text = __uiKeybind.Name
+			else
+				KeybindButton.Text = tostring(__uiKeybind)
+			end
+		end)
+
+		SettingsButton.MouseButton1Click:Connect(function()
+			if __destroyed then return end
+			__settingsOpen = not __settingsOpen
+			SettingsFrame.Visible = __settingsOpen
+		end)
+
+		KeybindButton.MouseButton1Click:Connect(function()
+			if __destroyed then return end
+			__capturingKeybind = true
+			KeybindButton.Text = "press a key..."
+		end)
+
 	end;
 
 	do
