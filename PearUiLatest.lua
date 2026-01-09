@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-Github, PLEASE UPDATE THIS FILE IN 10 SECONDS, I CAN LITERALLY GET A BUNNI.LOL KEY FASTER THAN THIS 😭
+sickssayben
 --]]
 
 -- Export Types --
@@ -4871,9 +4871,9 @@ function Pear.new(Window: Window)
 			__collapsed = false
 
 			MinimizeButton.Text = "-"
-			-- restore normal min size before expanding
-			WindowSizeConstraint.MinSize = __normalMinSize
-			FatalFrame.ClipsDescendants = false
+			-- keep collapsed min size during expand so width tween is visible
+			-- (we restore __normalMinSize after the expand finishes)
+			FatalFrame.ClipsDescendants = true
 
 			local headerH = Header.Size.Y.Offset
 			local fullW = (__lastSize and __lastSize.X and __lastSize.X.Offset) or (__lastFullSize and __lastFullSize.X.Offset) or FatalFrame.Size.X.Offset
@@ -4883,7 +4883,7 @@ function Pear.new(Window: Window)
 			__hideHeavy()
 
 			-- 1) widen first
-			local t1 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime * 0.75, {
+			local t1 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime, {
 				Size = UDim2.new(0, fullW, 0, headerH)
 			})
 
