@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-kotek
+sickssayben
 --]]
 
 -- Export Types --
@@ -4750,6 +4750,8 @@ function Pear.new(Window: Window)
 	local __collapseTweenTime = 0.35
 	local __lastSize = __lastFullSize or FatalFrame.Size
 	local __lastCollapsedSize = nil
+		local __SQUARE_TEXT = (utf8 and utf8.char and utf8.char(0x25A2)) or "[]"
+
 
 	local function __setCollapsed(state)
 		if __destroyed then return end
@@ -4764,6 +4766,51 @@ function Pear.new(Window: Window)
 			PearBackground.Visible = false
 		end
 
+local function __panicClose()
+	if __destroyed then return end
+	__destroyed = true
+
+	-- try to hard-disable every boolean flag (toggles) before destroying
+	local flags = Pear.WindowFlags[Pearwin]
+	if flags then
+		for _, element in next, flags do
+			if type(element) == "table" and element.GetValue and element.SetValue then
+				local ok, val = pcall(function() return element:GetValue() end)
+				if ok and typeof(val) == "boolean" and val == true then
+					pcall(function() element:SetValue(false) end)
+				end
+			end
+		end
+	end
+
+	pcall(function()
+		if KeybindConn then KeybindConn:Disconnect() end
+	end)
+	pcall(function()
+		if __resizeChangedConn then __resizeChangedConn:Disconnect() end
+	end)
+	pcall(function()
+		if __viewportConn then __viewportConn:Disconnect() end
+	end)
+
+	pcall(function()
+		for i = #Pear.Windows, 1, -1 do
+			if Pear.Windows[i] == Pearwin then
+				table.remove(Pear.Windows, i)
+			end
+		end
+	end)
+
+	pcall(function()
+		Pear.WindowFlags[Pearwin] = nil
+	end)
+
+	pcall(function()
+		Pearwin:Destroy()
+	end)
+end
+
+
 		local function __showHeavy()
 			MenuFrame.Visible = true
 			Bottom.Visible = true
@@ -4777,7 +4824,7 @@ function Pear.new(Window: Window)
 			__lastSize = __lastFullSize or FatalFrame.Size
 			__lastFullSize = __lastSize
 
-			MinimizeButton.Text = "▢"
+			MinimizeButton.Text = __SQUARE_TEXT
 
 			-- hide everything heavy BEFORE tweening so we don't FPS-drop while thousands of elements get reflowed
 			__hideHeavy()
@@ -6171,6 +6218,11 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		local __resizeStartPosV3 = nil -- Vector3 (input.Position for touch)
 		local __resizeStartAbsSize = nil -- Vector2 (AbsoluteSize)
 		local __resizeStartFramePos = nil -- UDim2
+		local __resizeParentW = 0
+		local __resizeScaleX = 0
+		local __resizeAnchorX = 0.5
+		local __resizeStartLeftEdge = 0
+
 		local __resizeInput = nil
 		local __resizeMoved = false
 
@@ -6198,9 +6250,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
 				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
 
-				local dx = newX - __resizeStartAbsSize.X
 				FatalFrame.Size = UDim2.new(0, newX, 0, newY)
-				FatalFrame.Position = UDim2.new(__resizeStartFramePos.X.Scale, __resizeStartFramePos.X.Offset + (dx/2), __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
+				local newAbsPosX = __resizeStartLeftEdge + (newX * __resizeAnchorX)
+				local newOffX = newAbsPosX - (__resizeParentW * __resizeScaleX)
+				FatalFrame.Position = UDim2.new(__resizeScaleX, newOffX, __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
 			elseif __resizeInput and input == __resizeInput then
 				local deltaV3 = input.Position - __resizeStartPosV3
 				local delta = Vector2.new(deltaV3.X, deltaV3.Y)
@@ -6215,9 +6268,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
 				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
 
-				local dx = newX - __resizeStartAbsSize.X
 				FatalFrame.Size = UDim2.new(0, newX, 0, newY)
-				FatalFrame.Position = UDim2.new(__resizeStartFramePos.X.Scale, __resizeStartFramePos.X.Offset + (dx/2), __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
+				local newAbsPosX = __resizeStartLeftEdge + (newX * __resizeAnchorX)
+				local newOffX = newAbsPosX - (__resizeParentW * __resizeScaleX)
+				FatalFrame.Position = UDim2.new(__resizeScaleX, newOffX, __resizeStartFramePos.Y.Scale, __resizeStartFramePos.Y.Offset)
 			end
 		end)
 
@@ -6230,6 +6284,11 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				__resizeStartPos = UserInputService:GetMouseLocation()
 				__resizeStartAbsSize = FatalFrame.AbsoluteSize
 				__resizeStartFramePos = FatalFrame.Position
+					__resizeParentW = (FatalFrame.Parent and FatalFrame.Parent.AbsoluteSize.X) or 0
+					__resizeScaleX = __resizeStartFramePos.X.Scale
+					__resizeAnchorX = FatalFrame.AnchorPoint.X
+					__resizeStartLeftEdge = (__resizeParentW * __resizeScaleX) + __resizeStartFramePos.X.Offset - (__resizeStartAbsSize.X * __resizeAnchorX)
+
 				__resizeInput = input
 
 				local endedConn
