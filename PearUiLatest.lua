@@ -1,8 +1,7 @@
 --[[
-Pear ui
+Pear ui lib omg
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-sickssayben
 --]]
 
 -- Export Types --
@@ -4753,6 +4752,52 @@ function Pear.new(Window: Window)
 		local __SQUARE_TEXT = (utf8 and utf8.char and utf8.char(0x25A2)) or "[]"
 
 
+
+	local function __panicClose()
+		if __destroyed then return end
+		__destroyed = true
+
+		-- try to hard-disable every boolean flag (toggles) before destroying
+		local flags = Pear.WindowFlags[Pearwin]
+		if flags then
+			for _, element in next, flags do
+				if type(element) == "table" and element.GetValue and element.SetValue then
+					local ok, val = pcall(function() return element:GetValue() end)
+					if ok and typeof(val) == "boolean" and val == true then
+						pcall(function() element:SetValue(false) end)
+					end
+				end
+			end
+		end
+
+		pcall(function()
+			if KeybindConn then KeybindConn:Disconnect() end
+		end)
+		pcall(function()
+			if __resizeChangedConn then __resizeChangedConn:Disconnect() end
+		end)
+		pcall(function()
+			if __viewportConn then __viewportConn:Disconnect() end
+		end)
+
+		pcall(function()
+			for i = #Pear.Windows, 1, -1 do
+				if Pear.Windows[i] == Pearwin then
+					table.remove(Pear.Windows, i)
+				end
+			end
+		end)
+
+		pcall(function()
+			Pear.WindowFlags[Pearwin] = nil
+		end)
+
+		pcall(function()
+			Pearwin:Destroy()
+		end)
+	end
+
+
 	local function __setCollapsed(state)
 		if __destroyed then return end
 
@@ -4766,52 +4811,10 @@ function Pear.new(Window: Window)
 			PearBackground.Visible = false
 		end
 
-local function __panicClose()
-	if __destroyed then return end
-	__destroyed = true
-
-	-- try to hard-disable every boolean flag (toggles) before destroying
-	local flags = Pear.WindowFlags[Pearwin]
-	if flags then
-		for _, element in next, flags do
-			if type(element) == "table" and element.GetValue and element.SetValue then
-				local ok, val = pcall(function() return element:GetValue() end)
-				if ok and typeof(val) == "boolean" and val == true then
-					pcall(function() element:SetValue(false) end)
-				end
-			end
-		end
-	end
-
-	pcall(function()
-		if KeybindConn then KeybindConn:Disconnect() end
-	end)
-	pcall(function()
-		if __resizeChangedConn then __resizeChangedConn:Disconnect() end
-	end)
-	pcall(function()
-		if __viewportConn then __viewportConn:Disconnect() end
-	end)
-
-	pcall(function()
-		for i = #Pear.Windows, 1, -1 do
-			if Pear.Windows[i] == Pearwin then
-				table.remove(Pear.Windows, i)
-			end
-		end
-	end)
-
-	pcall(function()
-		Pear.WindowFlags[Pearwin] = nil
-	end)
-
-	pcall(function()
-		Pearwin:Destroy()
-	end)
-end
 
 
 		local function __showHeavy()
+			if __collapsed then return end
 			MenuFrame.Visible = true
 			Bottom.Visible = true
 			MenuButtonCont.Visible = true
@@ -4825,6 +4828,8 @@ end
 			__lastFullSize = __lastSize
 
 			MinimizeButton.Text = __SQUARE_TEXT
+			FatalFrame.ClipsDescendants = true
+			PearBackground.Visible = false
 
 			-- hide everything heavy BEFORE tweening so we don't FPS-drop while thousands of elements get reflowed
 			__hideHeavy()
@@ -5172,6 +5177,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		Left.Position = UDim2.new(0.175, 0, 0.5, 0)
 		Left.Size = UDim2.new(0.32, 0, 1, -5)
 		Left.ScrollBarThickness = 0
+		Left.ClipsDescendants = true
+		Left.ScrollingDirection = Enum.ScrollingDirection.Y
+		Left.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		Left.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 		UIListLayout.Parent = Left
 		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -5191,6 +5200,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		Center.Position = UDim2.new(0.5, 0, 0.5, 0)
 		Center.Size = UDim2.new(0.32, 0, 1, -5)
 		Center.ScrollBarThickness = 0
+		Center.ClipsDescendants = true
+		Center.ScrollingDirection = Enum.ScrollingDirection.Y
+		Center.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		Center.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 		UIListLayout_2.Parent = Center
 		UIListLayout_2.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -5210,6 +5223,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		Right.Position = UDim2.new(0.825, 0, 0.5, 0)
 		Right.Size = UDim2.new(0.32, 0, 1, -5)
 		Right.ScrollBarThickness = 0
+		Right.ClipsDescendants = true
+		Right.ScrollingDirection = Enum.ScrollingDirection.Y
+		Right.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		Right.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 		UIListLayout_3.Parent = Right
 		UIListLayout_3.HorizontalAlignment = Enum.HorizontalAlignment.Center
