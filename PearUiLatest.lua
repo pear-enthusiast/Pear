@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-sickssayben
+kotakbas
 --]]
 
 -- Export Types --
@@ -4429,7 +4429,7 @@ function Pear.new(Window: Window)
 	FatalFrame.Size = Window.Scale;
 	__lastFullSize = FatalFrame.Size;
 
-	FatalFrame.ClipsDescendants = true
+	FatalFrame.ClipsDescendants = false
 
 	WindowSizeConstraint.Name = Pear:RandomString()
 	WindowSizeConstraint.Parent = FatalFrame
@@ -4538,7 +4538,7 @@ function Pear.new(Window: Window)
 	MinimizeButton.BackgroundTransparency = 1.000
 	MinimizeButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MinimizeButton.BorderSizePixel = 0
-	MinimizeButton.Position = UDim2.new(1, -180, 0.5, 0)
+	MinimizeButton.Position = UDim2.new(1, -32, 0.5, 0)
 	MinimizeButton.Size = UDim2.new(0, 18, 0, 18)
 	MinimizeButton.ZIndex = 6
 	MinimizeButton.Font = Enum.Font.GothamBold
@@ -4554,7 +4554,7 @@ function Pear.new(Window: Window)
 	CloseButton.BackgroundTransparency = 1.000
 	CloseButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	CloseButton.BorderSizePixel = 0
-	CloseButton.Position = UDim2.new(1, -160, 0.5, 0)
+	CloseButton.Position = UDim2.new(1, -10, 0.5, 0)
 	CloseButton.Size = UDim2.new(0, 18, 0, 18)
 	CloseButton.ZIndex = 6
 	CloseButton.Font = Enum.Font.GothamBold
@@ -4577,7 +4577,7 @@ function Pear.new(Window: Window)
 	MenuButtonCont.BorderSizePixel = 0
 	MenuButtonCont.ClipsDescendants = true
 	MenuButtonCont.Position = UDim2.new(0, 115, 0.5, 0)
-	MenuButtonCont.Size = UDim2.new(1, -275, 0.75, 0)
+	MenuButtonCont.Size = UDim2.new(1, -325, 0.75, 0)
 	MenuButtonCont.ZIndex = 4
 
 	tbc.Name = Pear:RandomString()
@@ -4608,7 +4608,7 @@ function Pear.new(Window: Window)
 	UserProfle.BackgroundTransparency = 1.000
 	UserProfle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	UserProfle.BorderSizePixel = 0
-	UserProfle.Position = UDim2.new(1, -5, 0.5, 0)
+	UserProfle.Position = UDim2.new(1, -60, 0.5, 0)
 	UserProfle.Size = UDim2.new(0, 150, 0.75, 0)
 	UserProfle.ZIndex = 4
 
@@ -4740,6 +4740,21 @@ function Pear.new(Window: Window)
 
 	local function __setCollapsed(state)
 		if __destroyed then return end
+
+		local function __hideHeavy()
+			MenuFrame.Visible = false
+			Bottom.Visible = false
+			MenuButtonCont.Visible = false
+			UserProfle.Visible = false
+		end
+
+		local function __showHeavy()
+			MenuFrame.Visible = true
+			Bottom.Visible = true
+			MenuButtonCont.Visible = true
+			UserProfle.Visible = true
+		end
+
 		if state and (not __collapsed) then
 			__collapsed = true
 			__lastSize = __lastFullSize or FatalFrame.Size
@@ -4747,95 +4762,72 @@ function Pear.new(Window: Window)
 
 			MinimizeButton.Text = "▢"
 
-			local textW = HeaderText.TextBounds.X
-			local targetW = math.clamp(math.floor(textW + 80), 190, __lastSize.X.Offset)
-			__lastCollapsedSize = UDim2.new(0, targetW, 0, 40)
+			-- hide everything heavy BEFORE tweening so we don't FPS-drop while thousands of elements get reflowed
+			__hideHeavy()
 
-			Pear:CreateAnimation(FatalFrame,__collapseTweenTime,{
-				Size = __lastCollapsedSize
+			local headerH = Header.Size.Y.Offset
+			local fullW = __lastSize.X.Offset
+			local textW = HeaderText.TextBounds.X
+			local targetW = math.clamp(math.floor(textW + 95), 190, fullW)
+
+			-- 1) roll up (height only)
+			local t1 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime, {
+				Size = UDim2.new(0, fullW, 0, headerH)
 			})
 
-			task.delay(__collapseTweenTime,function()
+			t1.Completed:Connect(function()
 				if __destroyed then return end
-				if __collapsed then
-					MenuFrame.Visible = false
-					Bottom.Visible = false
-					MenuButtonCont.Visible = false
-					UserProfle.Visible = false
-				end
+				if not __collapsed then return end
+
+				-- 2) then shorten width a bit
+				local t2 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime * 0.75, {
+					Size = UDim2.new(0, targetW, 0, headerH)
+				})
+
+				t2.Completed:Connect(function()
+					if __destroyed then return end
+					if __collapsed then
+						__lastCollapsedSize = UDim2.new(0, targetW, 0, headerH)
+					end
+				end)
 			end)
 
 		elseif (not state) and __collapsed then
 			__collapsed = false
 
-			MenuFrame.Visible = true
-			Bottom.Visible = true
-			MenuButtonCont.Visible = true
-			UserProfle.Visible = true
-
 			MinimizeButton.Text = "-"
 
-			Pear:CreateAnimation(FatalFrame,__collapseTweenTime,{
-				Size = (__lastFullSize or __lastSize)
+			local headerH = Header.Size.Y.Offset
+			local fullW = (__lastSize and __lastSize.X and __lastSize.X.Offset) or (__lastFullSize and __lastFullSize.X.Offset) or FatalFrame.Size.X.Offset
+			local fullH = (__lastSize and __lastSize.Y and __lastSize.Y.Offset) or (__lastFullSize and __lastFullSize.Y.Offset) or FatalFrame.Size.Y.Offset
+
+			-- keep heavy hidden during restore animation to avoid lag
+			__hideHeavy()
+
+			-- 1) widen first
+			local t1 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime * 0.75, {
+				Size = UDim2.new(0, fullW, 0, headerH)
 			})
+
+			t1.Completed:Connect(function()
+				if __destroyed then return end
+				if __collapsed then return end
+
+				-- 2) then roll down to full size
+				local t2 = Pear:CreateAnimation(FatalFrame, __collapseTweenTime, {
+					Size = UDim2.new(0, fullW, 0, fullH)
+				})
+
+				t2.Completed:Connect(function()
+					if __destroyed then return end
+					if not __collapsed then
+						__showHeavy()
+					end
+				end)
+			end)
 		end
 	end
 
-	local function __panicClose()
-		if __destroyed then return end
-		__destroyed = true
-
-		-- try to untoggle everything (booleans) before nuking ui
-		pcall(function()
-			for _,resp in next , (Pear.WindowFlags[Pearwin] or {}) do
-				local ok,val = pcall(function()
-					return resp:GetValue()
-				end)
-				if ok and typeof(val) == "boolean" then
-					pcall(function()
-						resp:SetValue(false)
-					end)
-				end
-			end
-		end)
-
-		pcall(function()
-			Fatal.Toggle = false
-		end)
-
-		-- disconnect global connections we made
-		pcall(function()
-			if __resizeChangedConn then __resizeChangedConn:Disconnect() end
-		end)
-		pcall(function()
-			if __viewportConn then __viewportConn:Disconnect() end
-		end)
-		pcall(function()
-			if KeybindConn then KeybindConn:Disconnect() end
-		end)
-
-		pcall(function()
-			Pear.WindowFlags[Pearwin] = nil
-		end)
-		pcall(function()
-			for i,v in next , (Pear.Windows or {}) do
-				if v == Pearwin then
-					table.remove(Pear.Windows,i)
-					break
-				end
-			end
-		end)
-
-		pcall(function()
-			InfoClickEvent:Destroy()
-		end)
-
-
-
-		pcall(function()
-			Pearwin:Destroy()
-		end)
-	end
 
 	MinimizeButton.MouseButton1Click:Connect(function()
 		__setCollapsed(not __collapsed)
@@ -6030,7 +6022,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		InfoButton.Position = UDim2.new(1, -5, 0.5, 0)
 		InfoButton.Size = UDim2.new(0, 16, 0, 16)
 		InfoButton.ZIndex = 4
-		InfoButton.Image = "rbxassetid://10723415903"
+		InfoButton.Image = "rbxassetid://10734898934"
 		InfoButton.ImageTransparency = 0.500
 
 		SearchButton.Name = Pear:RandomString()
@@ -6113,8 +6105,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		Pear:AddDragBlacklist(InfoButton);
 
 		local __resizing = false
-		local __resizeStartPos = nil
-		local __resizeStartSize = nil
+		local __resizeStartPos = nil -- Vector2 (mouse location)
+		local __resizeStartPosV3 = nil -- Vector3 (input.Position for touch)
+		local __resizeStartAbsSize = nil -- Vector2 (AbsoluteSize)
 		local __resizeInput = nil
 		local __resizeMoved = false
 
@@ -6124,14 +6117,35 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		__resizeChangedConn = UserInputService.InputChanged:Connect(function(input)
 			if __destroyed then return end
 			if __collapsed then return end
-			if __resizing and __resizeInput and input == __resizeInput then
-				local delta = input.Position - __resizeStartPos
+			if not __resizing then return end
+
+			-- Mouse: InputChanged comes as MouseMovement, not the original MouseButton1 input object.
+			-- Touch: InputChanged reuses the same touch input object.
+			if input.UserInputType == Enum.UserInputType.MouseMovement then
+				local mousePos = UserInputService:GetMouseLocation()
+				local delta = Vector2.new(mousePos.X - __resizeStartPos.X, mousePos.Y - __resizeStartPos.Y)
+
 				if (math.abs(delta.X) > 2) or (math.abs(delta.Y) > 2) then
 					__resizeMoved = true
 				end
 
-				local newX = (__resizeStartSize.X.Offset + delta.X)
-				local newY = (__resizeStartSize.Y.Offset + delta.Y)
+				local newX = (__resizeStartAbsSize.X + delta.X)
+				local newY = (__resizeStartAbsSize.Y + delta.Y)
+
+				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
+				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
+
+				FatalFrame.Size = UDim2.new(0, newX, 0, newY)
+			elseif __resizeInput and input == __resizeInput then
+				local deltaV3 = input.Position - __resizeStartPosV3
+				local delta = Vector2.new(deltaV3.X, deltaV3.Y)
+
+				if (math.abs(delta.X) > 2) or (math.abs(delta.Y) > 2) then
+					__resizeMoved = true
+				end
+
+				local newX = (__resizeStartAbsSize.X + delta.X)
+				local newY = (__resizeStartAbsSize.Y + delta.Y)
 
 				newX = math.clamp(newX, WindowSizeConstraint.MinSize.X, WindowSizeConstraint.MaxSize.X)
 				newY = math.clamp(newY, WindowSizeConstraint.MinSize.Y, WindowSizeConstraint.MaxSize.Y)
@@ -6145,20 +6159,20 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 				__resizing = true
 				__resizeMoved = false
-				__resizeStartPos = input.Position
-				__resizeStartSize = FatalFrame.Size
+				__resizeStartPosV3 = input.Position
+				__resizeStartPos = UserInputService:GetMouseLocation()
+				__resizeStartAbsSize = FatalFrame.AbsoluteSize
 				__resizeInput = input
 
 				local endedConn
-				endedConn = input.Changed:Connect(function()
-					if input.UserInputState == Enum.UserInputState.End then
-						if endedConn then endedConn:Disconnect() end
+				endedConn = input.Changed:Connect(function(prop)
+					if prop == "UserInputState" and input.UserInputState == Enum.UserInputState.End then
 						__resizing = false
 						__resizeInput = nil
+						if endedConn then endedConn:Disconnect() end
 
-						if not __resizeMoved then
-							InfoClickEvent:Fire()
-						else
+						-- always persist the last size after a drag-resize
+						if __resizeMoved then
 							__lastFullSize = FatalFrame.Size
 						end
 					end
