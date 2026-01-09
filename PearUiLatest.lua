@@ -1,7 +1,8 @@
 --[[
-Pear ui lib omg
+Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
+Github, PLEASE UPDATE THIS FILE IN 10 SECONDS, I CAN LITERALLY GET A BUNNI.LOL KEY FASTER THAN THIS 😭
 --]]
 
 -- Export Types --
@@ -4239,7 +4240,7 @@ function Pear.new(Window: Window)
 			end
 
 			Pear:CreateAnimation(FatalFrame,0.15,{
-				Size = Window.Scale,
+				Size = ((__collapsed and FatalFrame.Size) or (__lastFullSize or FatalFrame.Size)),
 				BackgroundTransparency = 0,
 			})
 
@@ -5083,7 +5084,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
-		Menu.AutoFill = (Menu.AutoFill == nil and true) or false;
+		Menu.AutoFill = (Menu.AutoFill == nil and false) or Menu.AutoFill;
 
 		local MenuLib = {};
 		local MenuButton = Instance.new("Frame")
@@ -5186,7 +5187,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout.Padding = UDim.new(0, 5)
-		UIListLayout.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
+		UIListLayout.VerticalFlex = Enum.UIFlexAlignment.None;
 
 		Center.Name = Pear:RandomString()
 		Center.Parent = MenuLiber
@@ -5209,7 +5210,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		UIListLayout_2.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout_2.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout_2.Padding = UDim.new(0, 5)
-		UIListLayout_2.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
+		UIListLayout_2.VerticalFlex = Enum.UIFlexAlignment.None;
 
 		Right.Name = Pear:RandomString()
 		Right.Parent = MenuLiber
@@ -5232,7 +5233,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		UIListLayout_3.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		UIListLayout_3.SortOrder = Enum.SortOrder.LayoutOrder
 		UIListLayout_3.Padding = UDim.new(0, 5)
-		UIListLayout_3.VerticalFlex = (Menu.AutoFill and Enum.UIFlexAlignment.Fill) or Enum.UIFlexAlignment.None;
+		UIListLayout_3.VerticalFlex = Enum.UIFlexAlignment.None;
 
 		local BindEvent = Instance.new('BindableEvent',MenuLiber);
 		BindEvent.Name = Pear:RandomString();
@@ -6086,14 +6087,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
 				local MainScale = UIListLayout.AbsoluteContentSize.Y + 20 + Config.Height;
 
-				if not Menu.AutoFill then
-					Pear:CreateAnimation(Section,0.25,{
+				Pear:CreateAnimation(Section,0.25,{
 						Size = UDim2.new(1, 0, 0, MainScale)
 					})
-				else
-					Section.Size = UDim2.new(1,0,0,MainScale / 2.5);
-				end;
-			end);
+					end);
 
 			Toggle(BindEvent:GetAttribute('V'));
 
