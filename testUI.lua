@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-whar?!
+sickssayben
 --]]
 
 -- Export Types --
@@ -3523,8 +3523,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
-		ValueFrame.Size = UDim2.new(0, 0, 0, 12)
-		ValueFrame.AutomaticSize = Enum.AutomaticSize.X
+		ValueFrame.Size = UDim2.new(0, 18, 0, 12)
 		ValueFrame.ZIndex = ZIndex + 2
 
 		UICorner.CornerRadius = UDim.new(0, 2)
@@ -3550,8 +3549,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.BackgroundTransparency = 1.000
 		ValueText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueText.BorderSizePixel = 0
-		ValueText.Size = UDim2.new(0, 0, 1, 0)
-		ValueText.AutomaticSize = Enum.AutomaticSize.X
+		ValueText.Size = UDim2.new(1, 0, 1, 0)
 		ValueText.ZIndex = ZIndex + 3
 		ValueText.FontFace = Pear.FontSemiBold
 		ValueText.Text = GetItem(Config.Default)
@@ -3559,15 +3557,6 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.TextSize = 8.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
-
-		local KeybindPadding = Instance.new("UIPadding")
-		KeybindPadding.PaddingLeft = UDim.new(0, 2)
-		KeybindPadding.PaddingRight = UDim.new(0, 2)
-		KeybindPadding.Parent = ValueFrame
-
-		local KeybindMinSize = Instance.new("UISizeConstraint")
-		KeybindMinSize.MinSize = Vector2.new(8, 0)
-		KeybindMinSize.Parent = ValueFrame
 
 		local IsBinding = false;
 		Pear:NewInput(ValueFrame,function()
@@ -6551,8 +6540,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindButton.BorderSizePixel = 0
 		KeybindButton.Position = UDim2.new(1, -10, 0, 28)
 		KeybindButton.AnchorPoint = Vector2.new(1, 0)
-		KeybindButton.Size = UDim2.new(0, 0, 0, 22)
-		KeybindButton.AutomaticSize = Enum.AutomaticSize.X
+		KeybindButton.Size = UDim2.new(0, 28, 0, 18)
 		KeybindButton.ZIndex = 21
 		KeybindButton.Font = Enum.Font.Gotham
 		KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -6565,15 +6553,6 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindStroke.Transparency = 0.92
 		KeybindStroke.Thickness = 1
 		KeybindStroke.Parent = KeybindButton
-
-		local SettingsKbPadding = Instance.new("UIPadding")
-		SettingsKbPadding.PaddingLeft = UDim.new(0, 3)
-		SettingsKbPadding.PaddingRight = UDim.new(0, 3)
-		SettingsKbPadding.Parent = KeybindButton
-
-		local SettingsKbMinSize = Instance.new("UISizeConstraint")
-		SettingsKbMinSize.MinSize = Vector2.new(16, 0)
-		SettingsKbMinSize.Parent = KeybindButton
 
 		-- phone toggle button row
 		local PhoneToggleTitle = Instance.new("TextLabel")
