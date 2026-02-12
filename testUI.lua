@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-locked in or geeked out? 🤔
+whar?!
 --]]
 
 -- Export Types --
@@ -3523,7 +3523,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
-		ValueFrame.Size = UDim2.new(0, 0, 0.850000024, 0)
+		ValueFrame.Size = UDim2.new(0, 0, 0, 12)
 		ValueFrame.AutomaticSize = Enum.AutomaticSize.X
 		ValueFrame.ZIndex = ZIndex + 2
 
@@ -3556,7 +3556,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.FontFace = Pear.FontSemiBold
 		ValueText.Text = GetItem(Config.Default)
 		ValueText.TextColor3 = Color3.fromRGB(255, 255, 255)
-		ValueText.TextSize = 9.000
+		ValueText.TextSize = 8.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
 
@@ -3566,7 +3566,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		KeybindPadding.Parent = ValueFrame
 
 		local KeybindMinSize = Instance.new("UISizeConstraint")
-		KeybindMinSize.MinSize = Vector2.new(10, 0)
+		KeybindMinSize.MinSize = Vector2.new(8, 0)
 		KeybindMinSize.Parent = ValueFrame
 
 		local IsBinding = false;
