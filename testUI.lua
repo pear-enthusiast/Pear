@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-67
+locked in or geeked out? 🤔
 --]]
 
 -- Export Types --
@@ -3561,12 +3561,12 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.TextTransparency = 0.400
 
 		local KeybindPadding = Instance.new("UIPadding")
-		KeybindPadding.PaddingLeft = UDim.new(0, 5)
-		KeybindPadding.PaddingRight = UDim.new(0, 5)
+		KeybindPadding.PaddingLeft = UDim.new(0, 2)
+		KeybindPadding.PaddingRight = UDim.new(0, 2)
 		KeybindPadding.Parent = ValueFrame
 
 		local KeybindMinSize = Instance.new("UISizeConstraint")
-		KeybindMinSize.MinSize = Vector2.new(14, 0)
+		KeybindMinSize.MinSize = Vector2.new(10, 0)
 		KeybindMinSize.Parent = ValueFrame
 
 		local IsBinding = false;
@@ -6567,12 +6567,12 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindStroke.Parent = KeybindButton
 
 		local SettingsKbPadding = Instance.new("UIPadding")
-		SettingsKbPadding.PaddingLeft = UDim.new(0, 6)
-		SettingsKbPadding.PaddingRight = UDim.new(0, 6)
+		SettingsKbPadding.PaddingLeft = UDim.new(0, 3)
+		SettingsKbPadding.PaddingRight = UDim.new(0, 3)
 		SettingsKbPadding.Parent = KeybindButton
 
 		local SettingsKbMinSize = Instance.new("UISizeConstraint")
-		SettingsKbMinSize.MinSize = Vector2.new(22, 0)
+		SettingsKbMinSize.MinSize = Vector2.new(16, 0)
 		SettingsKbMinSize.Parent = KeybindButton
 
 		-- phone toggle button row
