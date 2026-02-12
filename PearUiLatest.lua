@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-sickssayben
+this ui over here is held together with duct tape and prayers
 --]]
 
 -- Export Types --
@@ -61,6 +61,10 @@ export type Elements = {
 	},
 	AddKeybind: (self,Config: Keybind) -> {
 		Option: Elements	
+	},
+	AddLabel: (self,Config: Label) -> {
+		SetText: (self, text: string | {{Text: string, Color: Color3?}}) -> nil,
+		GetValue: (self) -> string,
 	},
 }
 
@@ -123,6 +127,12 @@ export type Keybind = {
 	Callback: (string) -> any,
 	Flag: string | nil,
 	Option: boolean,
+}
+
+export type Label = {
+	Name: string,
+	Text: string | {{Text: string, Color: Color3?}},
+	Position: string?,
 }
 
 export type Notify = {
@@ -1207,6 +1217,7 @@ function Pear:Drag(InputFrame: Frame, MoveFrame: Frame, Speed : number)
 	local dragToggle: boolean = false;
 	local dragStart: Vector3 = nil;
 	local startPos: UDim2 = nil;
+	local dragInput = nil;
 
 	local function updateInput(input)
 		local delta = input.Position - dragStart;
@@ -1223,23 +1234,27 @@ function Pear:Drag(InputFrame: Frame, MoveFrame: Frame, Speed : number)
 			dragToggle = true
 			dragStart = input.Position
 			startPos = MoveFrame.Position
+			dragInput = input
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragToggle = false
+					dragInput = nil
 				end
 			end)
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch and #Pear.DragBlacklist <= 0 then
-			if dragToggle then
-				updateInput(input)
-			end
-		else
-			if #Pear.DragBlacklist > 0 then
-				dragToggle = false
-			end
+		if not dragToggle then return end
+		if #Pear.DragBlacklist > 0 then
+			dragToggle = false
+			dragInput = nil
+			return
+		end
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
+			updateInput(input)
+		elseif input.UserInputType == Enum.UserInputType.Touch and dragInput and input == dragInput then
+			updateInput(input)
 		end
 	end);
 end;
@@ -2907,6 +2922,113 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		})
 	end;
 
+	function elements:AddLabel(Config: Label)
+		Config = Config or {};
+		Config.Name = Config.Name or "Label";
+		Config.Text = Config.Text or Config.Name;
+
+		local LabelFrame = Instance.new("Frame")
+		local Label_Text = Instance.new("TextLabel")
+
+		if SearchAPI then
+			SearchAPI.Memory(Config.Name);
+		end;
+
+		LabelFrame.Name = Pear:RandomString()
+		LabelFrame.Parent = Parent
+		LabelFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		LabelFrame.BackgroundTransparency = 1.000
+		LabelFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		LabelFrame.BorderSizePixel = 0
+		LabelFrame.Size = UDim2.new(1, -25, 0, 17)
+		LabelFrame.ZIndex = ZIndex + 1
+		LabelFrame.AutomaticSize = Enum.AutomaticSize.Y
+
+		Label_Text.Name = Pear:RandomString()
+		Label_Text.Parent = LabelFrame
+		Label_Text.AnchorPoint = Vector2.new(0, 0)
+		Label_Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		Label_Text.BackgroundTransparency = 1.000
+		Label_Text.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		Label_Text.BorderSizePixel = 0
+		Label_Text.Position = UDim2.new(0, 0, 0, 0)
+		Label_Text.Size = UDim2.new(1, 0, 0, 0)
+		Label_Text.AutomaticSize = Enum.AutomaticSize.Y
+		Label_Text.ZIndex = ZIndex + 2
+		Label_Text.FontFace = Pear.FontSemiBold
+		Label_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Label_Text.TextSize = 13.000
+		Label_Text.TextTransparency = 0.200
+		Label_Text.TextXAlignment = Enum.TextXAlignment.Left
+		Label_Text.TextYAlignment = Enum.TextYAlignment.Top
+		Label_Text.TextWrapped = true
+		Label_Text.RichText = true
+		Label_Text.Text = ""
+
+		-- helper: convert Color3 to hex string
+		local function c3ToHex(c: Color3): string
+			return string.format("#%02x%02x%02x",
+				math.clamp(math.round(c.R * 255), 0, 255),
+				math.clamp(math.round(c.G * 255), 0, 255),
+				math.clamp(math.round(c.B * 255), 0, 255))
+		end
+
+		-- build rich text from segments or plain string
+		-- Segments format: { {Text = "hello", Color = Color3.fromRGB(0,255,0)}, {Text = " world"} }
+		-- Plain string also accepted
+		-- Supports \n for new lines
+		local function buildRichText(data): string
+			if typeof(data) == "string" then
+				return string.gsub(data, "\n", "<br />")
+			end
+
+			if typeof(data) == "table" then
+				local parts = {}
+				for _, segment in next, data do
+					local text = tostring(segment.Text or "")
+					text = string.gsub(text, "\n", "<br />")
+					if segment.Color and typeof(segment.Color) == "Color3" then
+						table.insert(parts, string.format('<font color="%s">%s</font>', c3ToHex(segment.Color), text))
+					else
+						table.insert(parts, text)
+					end
+				end
+				return table.concat(parts, "")
+			end
+
+			return tostring(data)
+		end
+
+		Label_Text.Text = buildRichText(Config.Text)
+
+		local OpcToggle = function(value)
+			if value then
+				Pear:CreateAnimation(Label_Text, 0.45, {
+					TextTransparency = 0.200,
+				})
+			else
+				Pear:CreateAnimation(Label_Text, 0.45, {
+					TextTransparency = 1,
+				})
+			end;
+		end;
+
+		OpcToggle(Event:GetAttribute('V'));
+
+		return Pear:CreateResponse({
+			SetText = function(newText)
+				Label_Text.Text = buildRichText(newText)
+			end,
+			GetValue = function()
+				return Label_Text.Text
+			end,
+			Rename = function(new_name)
+				Config.Name = new_name
+			end,
+			Signal = Event.Event:Connect(OpcToggle),
+		})
+	end;
+
 	function elements:AddColorPicker(Config: ColorPicker)
 		Config = Config or {};
 		Config.Name = Config.Name or "Color Picker";
@@ -3401,7 +3523,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
-		ValueFrame.Size = UDim2.new(0, 75, 0.850000024, 0)
+		ValueFrame.Size = UDim2.new(0, 18, 0, 12)
 		ValueFrame.ZIndex = ZIndex + 2
 
 		UICorner.CornerRadius = UDim.new(0, 2)
@@ -3432,7 +3554,7 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.FontFace = Pear.FontSemiBold
 		ValueText.Text = GetItem(Config.Default)
 		ValueText.TextColor3 = Color3.fromRGB(255, 255, 255)
-		ValueText.TextSize = 9.000
+		ValueText.TextSize = 8.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
 
@@ -4148,6 +4270,23 @@ function Pear.new(Window: Window)
 	if typeof(__uiKeybind) == "string" then
 		__uiKeybind = Enum.KeyCode[__uiKeybind] or Enum.KeyCode.Insert
 	end
+
+	-- try to load saved keybind from file
+	local __keybindSavePath = "Pear/__keybind_" .. string.gsub(tostring(Window.Name), "[^%w]", "_") .. ".txt"
+	pcall(function()
+		if not isfolder("Pear") then makefolder("Pear") end
+		if isfile(__keybindSavePath) then
+			local saved = readfile(__keybindSavePath)
+			if saved and saved ~= "" then
+				local ok, kc = pcall(function() return Enum.KeyCode[saved] end)
+				if ok and kc then
+					__uiKeybind = kc
+					Window.Keybind = saved
+				end
+			end
+		end
+	end)
+
 	local __capturingKeybind = false
 	local __keybindButtonRef = nil
 	local __settingsOpen = false
@@ -4211,6 +4350,7 @@ function Pear.new(Window: Window)
 	local __resizeChangedConn = nil
 	local __viewportConn = nil
 	local KeybindConn = nil
+	local __phoneBubbleGui = nil -- forward-decl for phone toggle bubble
 
 
 	Pear.WindowFlags[Pearwin] = {};
@@ -4781,6 +4921,14 @@ function Pear.new(Window: Window)
 			if __viewportConn then __viewportConn:Disconnect() end
 		end)
 
+		-- destroy phone bubble if it exists
+		pcall(function()
+			if __phoneBubbleGui then
+				__phoneBubbleGui:Destroy()
+				__phoneBubbleGui = nil
+			end
+		end)
+
 		pcall(function()
 			for i = #Pear.Windows, 1, -1 do
 				if Pear.Windows[i] == Pearwin then
@@ -4928,6 +5076,11 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				if __keybindButtonRef then
 					__keybindButtonRef.Text = input.KeyCode.Name
 				end
+				-- persist keybind to file
+				pcall(function()
+					if not isfolder("Pear") then makefolder("Pear") end
+					writefile(__keybindSavePath, input.KeyCode.Name)
+				end)
 			end
 			__capturingKeybind = false
 			return
@@ -6346,7 +6499,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		SettingsFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
 		SettingsFrame.BorderSizePixel = 0
 		SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
-		SettingsFrame.Size = UDim2.new(0, 210, 0, 78)
+		SettingsFrame.Size = UDim2.new(0, 210, 0, 110)
 		SettingsFrame.Visible = false
 		SettingsFrame.ZIndex = 20
 
@@ -6387,7 +6540,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindButton.BorderSizePixel = 0
 		KeybindButton.Position = UDim2.new(1, -10, 0, 28)
 		KeybindButton.AnchorPoint = Vector2.new(1, 0)
-		KeybindButton.Size = UDim2.new(0, 85, 0, 22)
+		KeybindButton.Size = UDim2.new(0, 28, 0, 18)
 		KeybindButton.ZIndex = 21
 		KeybindButton.Font = Enum.Font.Gotham
 		KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -6400,6 +6553,241 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindStroke.Transparency = 0.92
 		KeybindStroke.Thickness = 1
 		KeybindStroke.Parent = KeybindButton
+
+		-- phone toggle button row
+		local PhoneToggleTitle = Instance.new("TextLabel")
+		local PhoneToggleBox = Instance.new("Frame")
+		local PhoneToggleCorner = Instance.new("UICorner")
+		local PhoneToggleIcon = Instance.new("ImageLabel")
+		local __phoneBubbleEnabled = false
+
+		-- persistence path for phone toggle
+		local __phoneSavePath = "Pear/__phone_toggle_" .. string.gsub(tostring(Window.Name), "[^%w]", "_") .. ".txt"
+
+		PhoneToggleTitle.Name = Pear:RandomString()
+		PhoneToggleTitle.Parent = SettingsFrame
+		PhoneToggleTitle.BackgroundTransparency = 1
+		PhoneToggleTitle.Position = UDim2.new(0, 10, 0, 62)
+		PhoneToggleTitle.Size = UDim2.new(0, 130, 0, 16)
+		PhoneToggleTitle.ZIndex = 21
+		PhoneToggleTitle.Font = Enum.Font.Gotham
+		PhoneToggleTitle.Text = "Phone UI button:"
+		PhoneToggleTitle.TextColor3 = Color3.fromRGB(210, 210, 210)
+		PhoneToggleTitle.TextSize = 12
+		PhoneToggleTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+		PhoneToggleBox.Name = Pear:RandomString()
+		PhoneToggleBox.Parent = SettingsFrame
+		PhoneToggleBox.BackgroundColor3 = Pear.Colors.Black
+		PhoneToggleBox.BorderSizePixel = 0
+		PhoneToggleBox.Position = UDim2.new(1, -10, 0, 58)
+		PhoneToggleBox.AnchorPoint = Vector2.new(1, 0)
+		PhoneToggleBox.Size = UDim2.new(0, 22, 0, 22)
+		PhoneToggleBox.ZIndex = 21
+
+		PhoneToggleCorner.CornerRadius = UDim.new(0, 2)
+		PhoneToggleCorner.Parent = PhoneToggleBox
+
+		PhoneToggleIcon.Name = Pear:RandomString()
+		PhoneToggleIcon.Parent = PhoneToggleBox
+		PhoneToggleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+		PhoneToggleIcon.BackgroundTransparency = 1
+		PhoneToggleIcon.BorderSizePixel = 0
+		PhoneToggleIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+		PhoneToggleIcon.Size = UDim2.new(0.7, 0, 0.7, 0)
+		PhoneToggleIcon.ZIndex = 22
+		PhoneToggleIcon.Image = "rbxassetid://10709790644" -- check icon
+		PhoneToggleIcon.ImageColor3 = Pear.Colors.Main
+		PhoneToggleIcon.ImageTransparency = 1
+
+		-- create / destroy the floating pear bubble
+		local function __createPhoneBubble()
+			if __phoneBubbleGui then return end
+
+			local BubbleGui = Instance.new("ScreenGui")
+			local BubbleButton = Instance.new("TextButton")
+			local BubbleCorner = Instance.new("UICorner")
+			local BubbleStroke = Instance.new("UIStroke")
+			local BubblePadding = Instance.new("UIPadding")
+			local BubbleEmoji = Instance.new("TextLabel")
+
+			BubbleGui.Name = Pear:RandomString()
+			BubbleGui.Parent = CoreGui
+			BubbleGui.ResetOnSpawn = false
+			BubbleGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+			BubbleGui.IgnoreGuiInset = true
+			pcall(function() protect_gui(BubbleGui) end)
+
+			BubbleButton.Name = Pear:RandomString()
+			BubbleButton.Parent = BubbleGui
+			BubbleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+			BubbleButton.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+			BubbleButton.BackgroundTransparency = 0.08
+			BubbleButton.BorderSizePixel = 0
+			BubbleButton.Position = UDim2.new(0, 50, 0.5, 0)
+			BubbleButton.Size = UDim2.new(0, 56, 0, 56)
+			BubbleButton.ZIndex = 999
+			BubbleButton.Text = ""
+			BubbleButton.AutoButtonColor = false
+			BubbleButton.Active = true
+
+			BubbleCorner.CornerRadius = UDim.new(0, 10)
+			BubbleCorner.Parent = BubbleButton
+
+			BubbleStroke.Color = Color3.fromRGB(40, 40, 40)
+			BubbleStroke.Thickness = 1.5
+			BubbleStroke.Transparency = 0.5
+			BubbleStroke.Parent = BubbleButton
+
+			BubblePadding.PaddingLeft = UDim.new(0, 6)
+			BubblePadding.PaddingRight = UDim.new(0, 6)
+			BubblePadding.PaddingTop = UDim.new(0, 6)
+			BubblePadding.PaddingBottom = UDim.new(0, 6)
+			BubblePadding.Parent = BubbleButton
+
+			BubbleEmoji.Name = Pear:RandomString()
+			BubbleEmoji.Parent = BubbleButton
+			BubbleEmoji.AnchorPoint = Vector2.new(0.5, 0.5)
+			BubbleEmoji.BackgroundTransparency = 1
+			BubbleEmoji.BorderSizePixel = 0
+			BubbleEmoji.Position = UDim2.new(0.5, 0, 0.5, 0)
+			BubbleEmoji.Size = UDim2.new(1, 0, 1, 0)
+			BubbleEmoji.ZIndex = 1000
+			BubbleEmoji.Font = Enum.Font.SourceSans
+			BubbleEmoji.Text = utf8.char(0x1F350) -- pear
+			BubbleEmoji.TextColor3 = Color3.fromRGB(255, 255, 255)
+			BubbleEmoji.TextScaled = true
+
+			-- clean drag + tap state machine (no stacking connections)
+			local _bDragging = false
+			local _bDragStart = Vector3.zero
+			local _bStartPos = UDim2.new()
+			local _bDragInput = nil
+			local _bMoved = false
+			local _bConns = {}
+
+			-- single global move listener (stored so we can disconnect on destroy)
+			_bConns[1] = UserInputService.InputChanged:Connect(function(input)
+				if not _bDragging then return end
+				local isMouse = (input.UserInputType == Enum.UserInputType.MouseMovement)
+				local isTouch = (input.UserInputType == Enum.UserInputType.Touch and _bDragInput and input == _bDragInput)
+				if not isMouse and not isTouch then return end
+
+				local delta = input.Position - _bDragStart
+				if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+					_bMoved = true
+				end
+				BubbleButton.Position = UDim2.new(
+					_bStartPos.X.Scale, _bStartPos.X.Offset + delta.X,
+					_bStartPos.Y.Scale, _bStartPos.Y.Offset + delta.Y
+				)
+			end)
+
+			-- single global end listener
+			_bConns[2] = UserInputService.InputEnded:Connect(function(input)
+				if not _bDragging then return end
+				local isEnd = false
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					isEnd = true
+				elseif input.UserInputType == Enum.UserInputType.Touch and _bDragInput and input == _bDragInput then
+					isEnd = true
+				end
+				if not isEnd then return end
+
+				_bDragging = false
+				_bDragInput = nil
+
+				-- restore size
+				Pear:CreateAnimation(BubbleButton, 0.2, Enum.EasingStyle.Back, {
+					Size = UDim2.new(0, 56, 0, 56)
+				})
+
+				-- tap (didn't drag) -> toggle UI
+				if not _bMoved then
+					Fatal.Toggle = not Fatal.Toggle
+					ToggleUI(Fatal.Toggle)
+
+					-- flash stroke
+					Pear:CreateAnimation(BubbleStroke, 0.15, {
+						Color = Pear.Colors.Main,
+						Transparency = 0
+					})
+					task.delay(0.3, function()
+						Pear:CreateAnimation(BubbleStroke, 0.4, {
+							Color = Color3.fromRGB(40, 40, 40),
+							Transparency = 0.5
+						})
+					end)
+				end
+			end)
+
+			-- begin drag only on the button itself (proper hitbox)
+			_bConns[3] = BubbleButton.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+					_bDragging = true
+					_bMoved = false
+					_bDragStart = input.Position
+					_bStartPos = BubbleButton.Position
+					_bDragInput = input
+
+					Pear:CreateAnimation(BubbleButton, 0.15, {
+						Size = UDim2.new(0, 50, 0, 50)
+					})
+				end
+			end)
+
+			-- store refs for cleanup
+			BubbleGui:SetAttribute("__bConns", true)
+			BubbleGui.Destroying:Connect(function()
+				for _, c in _bConns do
+					pcall(function() c:Disconnect() end)
+				end
+			end)
+
+			__phoneBubbleGui = BubbleGui
+		end
+
+		local function __destroyPhoneBubble()
+			if __phoneBubbleGui then
+				pcall(function() __phoneBubbleGui:Destroy() end)
+				__phoneBubbleGui = nil
+			end
+		end
+
+		local function __setPhoneToggle(enabled)
+			__phoneBubbleEnabled = enabled
+			if enabled then
+				Pear:CreateAnimation(PhoneToggleIcon, 0.35, {
+					ImageTransparency = 0,
+					Size = UDim2.new(0.8, 0, 0.8, 0),
+					Rotation = 0
+				})
+				Pear:CreateAnimation(PhoneToggleBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+				__createPhoneBubble()
+			else
+				Pear:CreateAnimation(PhoneToggleIcon, 0.35, {
+					ImageTransparency = 1,
+					Size = UDim2.new(0.7, 0, 0.7, 0),
+					Rotation = 15
+				})
+				Pear:CreateAnimation(PhoneToggleBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+				__destroyPhoneBubble()
+			end
+			-- persist
+			pcall(function()
+				if not isfolder("Pear") then makefolder("Pear") end
+				writefile(__phoneSavePath, enabled and "1" or "0")
+			end)
+		end
+
+		-- clickable toggle for the phone button setting
+		Pear:NewInput(PhoneToggleBox, function()
+			__setPhoneToggle(not __phoneBubbleEnabled)
+		end)
 
 		__keybindButtonRef = KeybindButton
 		pcall(function()
@@ -6420,6 +6808,17 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			if __destroyed then return end
 			__capturingKeybind = true
 			KeybindButton.Text = "press a key..."
+		end)
+
+		-- load saved phone toggle state
+		pcall(function()
+			if not isfolder("Pear") then makefolder("Pear") end
+			if isfile(__phoneSavePath) then
+				local saved = readfile(__phoneSavePath)
+				if saved == "1" then
+					__setPhoneToggle(true)
+				end
+			end
 		end)
 
 	end;
