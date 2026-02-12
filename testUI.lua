@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-sickssayben
+67
 --]]
 
 -- Export Types --
@@ -3523,7 +3523,8 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.Position = UDim2.new(1, -3, 0.5, 0)
-		ValueFrame.Size = UDim2.new(0, 75, 0.850000024, 0)
+		ValueFrame.Size = UDim2.new(0, 0, 0.850000024, 0)
+		ValueFrame.AutomaticSize = Enum.AutomaticSize.X
 		ValueFrame.ZIndex = ZIndex + 2
 
 		UICorner.CornerRadius = UDim.new(0, 2)
@@ -3549,7 +3550,8 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.BackgroundTransparency = 1.000
 		ValueText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueText.BorderSizePixel = 0
-		ValueText.Size = UDim2.new(1, 0, 1, 0)
+		ValueText.Size = UDim2.new(0, 0, 1, 0)
+		ValueText.AutomaticSize = Enum.AutomaticSize.X
 		ValueText.ZIndex = ZIndex + 3
 		ValueText.FontFace = Pear.FontSemiBold
 		ValueText.Text = GetItem(Config.Default)
@@ -3557,6 +3559,15 @@ function Pear:CreateElements(Parent : Frame , ZIndex : number , Event : Bindable
 		ValueText.TextSize = 9.000
 		ValueText.TextStrokeTransparency = 0.850
 		ValueText.TextTransparency = 0.400
+
+		local KeybindPadding = Instance.new("UIPadding")
+		KeybindPadding.PaddingLeft = UDim.new(0, 5)
+		KeybindPadding.PaddingRight = UDim.new(0, 5)
+		KeybindPadding.Parent = ValueFrame
+
+		local KeybindMinSize = Instance.new("UISizeConstraint")
+		KeybindMinSize.MinSize = Vector2.new(14, 0)
+		KeybindMinSize.Parent = ValueFrame
 
 		local IsBinding = false;
 		Pear:NewInput(ValueFrame,function()
@@ -6540,7 +6551,8 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindButton.BorderSizePixel = 0
 		KeybindButton.Position = UDim2.new(1, -10, 0, 28)
 		KeybindButton.AnchorPoint = Vector2.new(1, 0)
-		KeybindButton.Size = UDim2.new(0, 85, 0, 22)
+		KeybindButton.Size = UDim2.new(0, 0, 0, 22)
+		KeybindButton.AutomaticSize = Enum.AutomaticSize.X
 		KeybindButton.ZIndex = 21
 		KeybindButton.Font = Enum.Font.Gotham
 		KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -6553,6 +6565,15 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindStroke.Transparency = 0.92
 		KeybindStroke.Thickness = 1
 		KeybindStroke.Parent = KeybindButton
+
+		local SettingsKbPadding = Instance.new("UIPadding")
+		SettingsKbPadding.PaddingLeft = UDim.new(0, 6)
+		SettingsKbPadding.PaddingRight = UDim.new(0, 6)
+		SettingsKbPadding.Parent = KeybindButton
+
+		local SettingsKbMinSize = Instance.new("UISizeConstraint")
+		SettingsKbMinSize.MinSize = Vector2.new(22, 0)
+		SettingsKbMinSize.Parent = KeybindButton
 
 		-- phone toggle button row
 		local PhoneToggleTitle = Instance.new("TextLabel")
@@ -6605,9 +6626,10 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			if __phoneBubbleGui then return end
 
 			local BubbleGui = Instance.new("ScreenGui")
-			local BubbleFrame = Instance.new("Frame")
+			local BubbleButton = Instance.new("TextButton")
 			local BubbleCorner = Instance.new("UICorner")
 			local BubbleStroke = Instance.new("UIStroke")
+			local BubblePadding = Instance.new("UIPadding")
 			local BubbleEmoji = Instance.new("TextLabel")
 
 			BubbleGui.Name = Pear:RandomString()
@@ -6617,27 +6639,35 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			BubbleGui.IgnoreGuiInset = true
 			pcall(function() protect_gui(BubbleGui) end)
 
-			BubbleFrame.Name = Pear:RandomString()
-			BubbleFrame.Parent = BubbleGui
-			BubbleFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-			BubbleFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
-			BubbleFrame.BackgroundTransparency = 0.08
-			BubbleFrame.BorderSizePixel = 0
-			BubbleFrame.Position = UDim2.new(0, 50, 0.5, 0)
-			BubbleFrame.Size = UDim2.new(0, 48, 0, 48)
-			BubbleFrame.ZIndex = 999
-			BubbleFrame.Active = true
+			BubbleButton.Name = Pear:RandomString()
+			BubbleButton.Parent = BubbleGui
+			BubbleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+			BubbleButton.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+			BubbleButton.BackgroundTransparency = 0.08
+			BubbleButton.BorderSizePixel = 0
+			BubbleButton.Position = UDim2.new(0, 50, 0.5, 0)
+			BubbleButton.Size = UDim2.new(0, 56, 0, 56)
+			BubbleButton.ZIndex = 999
+			BubbleButton.Text = ""
+			BubbleButton.AutoButtonColor = false
+			BubbleButton.Active = true
 
-			BubbleCorner.CornerRadius = UDim.new(0.5, 0)
-			BubbleCorner.Parent = BubbleFrame
+			BubbleCorner.CornerRadius = UDim.new(0, 10)
+			BubbleCorner.Parent = BubbleButton
 
 			BubbleStroke.Color = Color3.fromRGB(40, 40, 40)
 			BubbleStroke.Thickness = 1.5
 			BubbleStroke.Transparency = 0.5
-			BubbleStroke.Parent = BubbleFrame
+			BubbleStroke.Parent = BubbleButton
+
+			BubblePadding.PaddingLeft = UDim.new(0, 6)
+			BubblePadding.PaddingRight = UDim.new(0, 6)
+			BubblePadding.PaddingTop = UDim.new(0, 6)
+			BubblePadding.PaddingBottom = UDim.new(0, 6)
+			BubblePadding.Parent = BubbleButton
 
 			BubbleEmoji.Name = Pear:RandomString()
-			BubbleEmoji.Parent = BubbleFrame
+			BubbleEmoji.Parent = BubbleButton
 			BubbleEmoji.AnchorPoint = Vector2.new(0.5, 0.5)
 			BubbleEmoji.BackgroundTransparency = 1
 			BubbleEmoji.BorderSizePixel = 0
@@ -6645,85 +6675,93 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			BubbleEmoji.Size = UDim2.new(1, 0, 1, 0)
 			BubbleEmoji.ZIndex = 1000
 			BubbleEmoji.Font = Enum.Font.SourceSans
-			BubbleEmoji.Text = utf8.char(0x1F350) -- 🍐
+			BubbleEmoji.Text = utf8.char(0x1F350) -- pear
 			BubbleEmoji.TextColor3 = Color3.fromRGB(255, 255, 255)
 			BubbleEmoji.TextScaled = true
-			BubbleEmoji.TextSize = 28
 
-			-- draggable bubble with tap detection
-			local bubbleDragging = false
-			local bubbleDragStart = nil
-			local bubbleStartPos = nil
-			local bubbleDragInput = nil
-			local bubbleMoved = false
+			-- clean drag + tap state machine (no stacking connections)
+			local _bDragging = false
+			local _bDragStart = Vector3.zero
+			local _bStartPos = UDim2.new()
+			local _bDragInput = nil
+			local _bMoved = false
+			local _bConns = {}
 
-			BubbleFrame.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-					bubbleDragging = true
-					bubbleMoved = false
-					bubbleDragStart = input.Position
-					bubbleStartPos = BubbleFrame.Position
-					bubbleDragInput = input
+			-- single global move listener (stored so we can disconnect on destroy)
+			_bConns[1] = UserInputService.InputChanged:Connect(function(input)
+				if not _bDragging then return end
+				local isMouse = (input.UserInputType == Enum.UserInputType.MouseMovement)
+				local isTouch = (input.UserInputType == Enum.UserInputType.Touch and _bDragInput and input == _bDragInput)
+				if not isMouse and not isTouch then return end
 
-					-- subtle press scale
-					Pear:CreateAnimation(BubbleFrame, 0.15, {
-						Size = UDim2.new(0, 44, 0, 44)
+				local delta = input.Position - _bDragStart
+				if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+					_bMoved = true
+				end
+				BubbleButton.Position = UDim2.new(
+					_bStartPos.X.Scale, _bStartPos.X.Offset + delta.X,
+					_bStartPos.Y.Scale, _bStartPos.Y.Offset + delta.Y
+				)
+			end)
+
+			-- single global end listener
+			_bConns[2] = UserInputService.InputEnded:Connect(function(input)
+				if not _bDragging then return end
+				local isEnd = false
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					isEnd = true
+				elseif input.UserInputType == Enum.UserInputType.Touch and _bDragInput and input == _bDragInput then
+					isEnd = true
+				end
+				if not isEnd then return end
+
+				_bDragging = false
+				_bDragInput = nil
+
+				-- restore size
+				Pear:CreateAnimation(BubbleButton, 0.2, Enum.EasingStyle.Back, {
+					Size = UDim2.new(0, 56, 0, 56)
+				})
+
+				-- tap (didn't drag) -> toggle UI
+				if not _bMoved then
+					Fatal.Toggle = not Fatal.Toggle
+					ToggleUI(Fatal.Toggle)
+
+					-- flash stroke
+					Pear:CreateAnimation(BubbleStroke, 0.15, {
+						Color = Pear.Colors.Main,
+						Transparency = 0
 					})
-
-					input.Changed:Connect(function()
-						if input.UserInputState == Enum.UserInputState.End then
-							bubbleDragging = false
-							bubbleDragInput = nil
-
-							-- restore size
-							Pear:CreateAnimation(BubbleFrame, 0.2, Enum.EasingStyle.Back, {
-								Size = UDim2.new(0, 48, 0, 48)
-							})
-
-							-- if didn't move much, treat as tap -> toggle UI
-							if not bubbleMoved then
-								Fatal.Toggle = not Fatal.Toggle
-								ToggleUI(Fatal.Toggle)
-
-								-- flash the stroke color on tap
-								Pear:CreateAnimation(BubbleStroke, 0.15, {
-									Color = Pear.Colors.Main,
-									Transparency = 0
-								})
-								task.delay(0.3, function()
-									Pear:CreateAnimation(BubbleStroke, 0.4, {
-										Color = Color3.fromRGB(40, 40, 40),
-										Transparency = 0.5
-									})
-								end)
-							end
-						end
+					task.delay(0.3, function()
+						Pear:CreateAnimation(BubbleStroke, 0.4, {
+							Color = Color3.fromRGB(40, 40, 40),
+							Transparency = 0.5
+						})
 					end)
 				end
 			end)
 
-			UserInputService.InputChanged:Connect(function(input)
-				if not bubbleDragging then return end
-				if input.UserInputType == Enum.UserInputType.MouseMovement then
-					local delta = input.Position - bubbleDragStart
-					if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
-						bubbleMoved = true
-					end
-					local pos = UDim2.new(
-						bubbleStartPos.X.Scale, bubbleStartPos.X.Offset + delta.X,
-						bubbleStartPos.Y.Scale, bubbleStartPos.Y.Offset + delta.Y
-					)
-					Pear:CreateAnimation(BubbleFrame, 0.08, nil, { Position = pos })
-				elseif input.UserInputType == Enum.UserInputType.Touch and bubbleDragInput and input == bubbleDragInput then
-					local delta = input.Position - bubbleDragStart
-					if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
-						bubbleMoved = true
-					end
-					local pos = UDim2.new(
-						bubbleStartPos.X.Scale, bubbleStartPos.X.Offset + delta.X,
-						bubbleStartPos.Y.Scale, bubbleStartPos.Y.Offset + delta.Y
-					)
-					Pear:CreateAnimation(BubbleFrame, 0.08, nil, { Position = pos })
+			-- begin drag only on the button itself (proper hitbox)
+			_bConns[3] = BubbleButton.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+					_bDragging = true
+					_bMoved = false
+					_bDragStart = input.Position
+					_bStartPos = BubbleButton.Position
+					_bDragInput = input
+
+					Pear:CreateAnimation(BubbleButton, 0.15, {
+						Size = UDim2.new(0, 50, 0, 50)
+					})
+				end
+			end)
+
+			-- store refs for cleanup
+			BubbleGui:SetAttribute("__bConns", true)
+			BubbleGui.Destroying:Connect(function()
+				for _, c in _bConns do
+					pcall(function() c:Disconnect() end)
 				end
 			end)
 
