@@ -2,7 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-fikffevem
+sickssayben
 --]]
 
 -- Export Types --
@@ -4350,6 +4350,7 @@ function Pear.new(Window: Window)
 	local __resizeChangedConn = nil
 	local __viewportConn = nil
 	local KeybindConn = nil
+	local __phoneBubbleGui = nil -- forward-decl for phone toggle bubble
 
 
 	Pear.WindowFlags[Pearwin] = {};
@@ -4918,6 +4919,14 @@ function Pear.new(Window: Window)
 		end)
 		pcall(function()
 			if __viewportConn then __viewportConn:Disconnect() end
+		end)
+
+		-- destroy phone bubble if it exists
+		pcall(function()
+			if __phoneBubbleGui then
+				__phoneBubbleGui:Destroy()
+				__phoneBubbleGui = nil
+			end
 		end)
 
 		pcall(function()
@@ -6490,7 +6499,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		SettingsFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
 		SettingsFrame.BorderSizePixel = 0
 		SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
-		SettingsFrame.Size = UDim2.new(0, 210, 0, 78)
+		SettingsFrame.Size = UDim2.new(0, 210, 0, 110)
 		SettingsFrame.Visible = false
 		SettingsFrame.ZIndex = 20
 
@@ -6545,6 +6554,224 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		KeybindStroke.Thickness = 1
 		KeybindStroke.Parent = KeybindButton
 
+		-- phone toggle button row
+		local PhoneToggleTitle = Instance.new("TextLabel")
+		local PhoneToggleBox = Instance.new("Frame")
+		local PhoneToggleCorner = Instance.new("UICorner")
+		local PhoneToggleIcon = Instance.new("ImageLabel")
+		local __phoneBubbleEnabled = false
+
+		-- persistence path for phone toggle
+		local __phoneSavePath = "Pear/__phone_toggle_" .. string.gsub(tostring(Window.Name), "[^%w]", "_") .. ".txt"
+
+		PhoneToggleTitle.Name = Pear:RandomString()
+		PhoneToggleTitle.Parent = SettingsFrame
+		PhoneToggleTitle.BackgroundTransparency = 1
+		PhoneToggleTitle.Position = UDim2.new(0, 10, 0, 62)
+		PhoneToggleTitle.Size = UDim2.new(0, 130, 0, 16)
+		PhoneToggleTitle.ZIndex = 21
+		PhoneToggleTitle.Font = Enum.Font.Gotham
+		PhoneToggleTitle.Text = "Phone UI button:"
+		PhoneToggleTitle.TextColor3 = Color3.fromRGB(210, 210, 210)
+		PhoneToggleTitle.TextSize = 12
+		PhoneToggleTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+		PhoneToggleBox.Name = Pear:RandomString()
+		PhoneToggleBox.Parent = SettingsFrame
+		PhoneToggleBox.BackgroundColor3 = Pear.Colors.Black
+		PhoneToggleBox.BorderSizePixel = 0
+		PhoneToggleBox.Position = UDim2.new(1, -10, 0, 58)
+		PhoneToggleBox.AnchorPoint = Vector2.new(1, 0)
+		PhoneToggleBox.Size = UDim2.new(0, 22, 0, 22)
+		PhoneToggleBox.ZIndex = 21
+
+		PhoneToggleCorner.CornerRadius = UDim.new(0, 2)
+		PhoneToggleCorner.Parent = PhoneToggleBox
+
+		PhoneToggleIcon.Name = Pear:RandomString()
+		PhoneToggleIcon.Parent = PhoneToggleBox
+		PhoneToggleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+		PhoneToggleIcon.BackgroundTransparency = 1
+		PhoneToggleIcon.BorderSizePixel = 0
+		PhoneToggleIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+		PhoneToggleIcon.Size = UDim2.new(0.7, 0, 0.7, 0)
+		PhoneToggleIcon.ZIndex = 22
+		PhoneToggleIcon.Image = "rbxassetid://10709790644" -- check icon
+		PhoneToggleIcon.ImageColor3 = Pear.Colors.Main
+		PhoneToggleIcon.ImageTransparency = 1
+
+		-- create / destroy the floating pear bubble
+		local function __createPhoneBubble()
+			if __phoneBubbleGui then return end
+
+			local BubbleGui = Instance.new("ScreenGui")
+			local BubbleFrame = Instance.new("Frame")
+			local BubbleCorner = Instance.new("UICorner")
+			local BubbleStroke = Instance.new("UIStroke")
+			local BubbleEmoji = Instance.new("TextLabel")
+
+			BubbleGui.Name = Pear:RandomString()
+			BubbleGui.Parent = CoreGui
+			BubbleGui.ResetOnSpawn = false
+			BubbleGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+			BubbleGui.IgnoreGuiInset = true
+			pcall(function() protect_gui(BubbleGui) end)
+
+			BubbleFrame.Name = Pear:RandomString()
+			BubbleFrame.Parent = BubbleGui
+			BubbleFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+			BubbleFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+			BubbleFrame.BackgroundTransparency = 0.08
+			BubbleFrame.BorderSizePixel = 0
+			BubbleFrame.Position = UDim2.new(0, 50, 0.5, 0)
+			BubbleFrame.Size = UDim2.new(0, 48, 0, 48)
+			BubbleFrame.ZIndex = 999
+			BubbleFrame.Active = true
+
+			BubbleCorner.CornerRadius = UDim.new(0.5, 0)
+			BubbleCorner.Parent = BubbleFrame
+
+			BubbleStroke.Color = Color3.fromRGB(40, 40, 40)
+			BubbleStroke.Thickness = 1.5
+			BubbleStroke.Transparency = 0.5
+			BubbleStroke.Parent = BubbleFrame
+
+			BubbleEmoji.Name = Pear:RandomString()
+			BubbleEmoji.Parent = BubbleFrame
+			BubbleEmoji.AnchorPoint = Vector2.new(0.5, 0.5)
+			BubbleEmoji.BackgroundTransparency = 1
+			BubbleEmoji.BorderSizePixel = 0
+			BubbleEmoji.Position = UDim2.new(0.5, 0, 0.5, 0)
+			BubbleEmoji.Size = UDim2.new(1, 0, 1, 0)
+			BubbleEmoji.ZIndex = 1000
+			BubbleEmoji.Font = Enum.Font.SourceSans
+			BubbleEmoji.Text = utf8.char(0x1F350) -- 🍐
+			BubbleEmoji.TextColor3 = Color3.fromRGB(255, 255, 255)
+			BubbleEmoji.TextScaled = true
+			BubbleEmoji.TextSize = 28
+
+			-- draggable bubble with tap detection
+			local bubbleDragging = false
+			local bubbleDragStart = nil
+			local bubbleStartPos = nil
+			local bubbleDragInput = nil
+			local bubbleMoved = false
+
+			BubbleFrame.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+					bubbleDragging = true
+					bubbleMoved = false
+					bubbleDragStart = input.Position
+					bubbleStartPos = BubbleFrame.Position
+					bubbleDragInput = input
+
+					-- subtle press scale
+					Pear:CreateAnimation(BubbleFrame, 0.15, {
+						Size = UDim2.new(0, 44, 0, 44)
+					})
+
+					input.Changed:Connect(function()
+						if input.UserInputState == Enum.UserInputState.End then
+							bubbleDragging = false
+							bubbleDragInput = nil
+
+							-- restore size
+							Pear:CreateAnimation(BubbleFrame, 0.2, Enum.EasingStyle.Back, {
+								Size = UDim2.new(0, 48, 0, 48)
+							})
+
+							-- if didn't move much, treat as tap -> toggle UI
+							if not bubbleMoved then
+								Fatal.Toggle = not Fatal.Toggle
+								ToggleUI(Fatal.Toggle)
+
+								-- flash the stroke color on tap
+								Pear:CreateAnimation(BubbleStroke, 0.15, {
+									Color = Pear.Colors.Main,
+									Transparency = 0
+								})
+								task.delay(0.3, function()
+									Pear:CreateAnimation(BubbleStroke, 0.4, {
+										Color = Color3.fromRGB(40, 40, 40),
+										Transparency = 0.5
+									})
+								end)
+							end
+						end
+					end)
+				end
+			end)
+
+			UserInputService.InputChanged:Connect(function(input)
+				if not bubbleDragging then return end
+				if input.UserInputType == Enum.UserInputType.MouseMovement then
+					local delta = input.Position - bubbleDragStart
+					if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
+						bubbleMoved = true
+					end
+					local pos = UDim2.new(
+						bubbleStartPos.X.Scale, bubbleStartPos.X.Offset + delta.X,
+						bubbleStartPos.Y.Scale, bubbleStartPos.Y.Offset + delta.Y
+					)
+					Pear:CreateAnimation(BubbleFrame, 0.08, nil, { Position = pos })
+				elseif input.UserInputType == Enum.UserInputType.Touch and bubbleDragInput and input == bubbleDragInput then
+					local delta = input.Position - bubbleDragStart
+					if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
+						bubbleMoved = true
+					end
+					local pos = UDim2.new(
+						bubbleStartPos.X.Scale, bubbleStartPos.X.Offset + delta.X,
+						bubbleStartPos.Y.Scale, bubbleStartPos.Y.Offset + delta.Y
+					)
+					Pear:CreateAnimation(BubbleFrame, 0.08, nil, { Position = pos })
+				end
+			end)
+
+			__phoneBubbleGui = BubbleGui
+		end
+
+		local function __destroyPhoneBubble()
+			if __phoneBubbleGui then
+				pcall(function() __phoneBubbleGui:Destroy() end)
+				__phoneBubbleGui = nil
+			end
+		end
+
+		local function __setPhoneToggle(enabled)
+			__phoneBubbleEnabled = enabled
+			if enabled then
+				Pear:CreateAnimation(PhoneToggleIcon, 0.35, {
+					ImageTransparency = 0,
+					Size = UDim2.new(0.8, 0, 0.8, 0),
+					Rotation = 0
+				})
+				Pear:CreateAnimation(PhoneToggleBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+				__createPhoneBubble()
+			else
+				Pear:CreateAnimation(PhoneToggleIcon, 0.35, {
+					ImageTransparency = 1,
+					Size = UDim2.new(0.7, 0, 0.7, 0),
+					Rotation = 15
+				})
+				Pear:CreateAnimation(PhoneToggleBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+				__destroyPhoneBubble()
+			end
+			-- persist
+			pcall(function()
+				if not isfolder("Pear") then makefolder("Pear") end
+				writefile(__phoneSavePath, enabled and "1" or "0")
+			end)
+		end
+
+		-- clickable toggle for the phone button setting
+		Pear:NewInput(PhoneToggleBox, function()
+			__setPhoneToggle(not __phoneBubbleEnabled)
+		end)
+
 		__keybindButtonRef = KeybindButton
 		pcall(function()
 			if typeof(__uiKeybind) == "EnumItem" then
@@ -6564,6 +6791,17 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			if __destroyed then return end
 			__capturingKeybind = true
 			KeybindButton.Text = "press a key..."
+		end)
+
+		-- load saved phone toggle state
+		pcall(function()
+			if not isfolder("Pear") then makefolder("Pear") end
+			if isfile(__phoneSavePath) then
+				local saved = readfile(__phoneSavePath)
+				if saved == "1" then
+					__setPhoneToggle(true)
+				end
+			end
 		end)
 
 	end;
