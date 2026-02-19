@@ -3,7 +3,6 @@ Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
 sickssayben
-7667 lines peak
 --]]
 
 -- Export Types --
@@ -3688,6 +3687,9 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	local UICorner_6 = Instance.new("UICorner")
 	local DeleteButton = Instance.new("ImageButton")
 	local UICorner_7 = Instance.new("UICorner")
+	local EmptyLabel = Instance.new("TextLabel")
+	local ApplyButton = Instance.new("TextButton")
+	local AutoloadCheckbox = Instance.new("ImageButton")
 
 	Pear:ScrollSignal(ScrollingFrame,UIListLayout,"Y");
 
@@ -3870,6 +3872,19 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	UIListLayout.Padding = UDim.new(0, 5)
 
+	EmptyLabel.Name = "EmptyLabel"
+	EmptyLabel.Parent = ScrollingFrame
+	EmptyLabel.BackgroundTransparency = 1
+	EmptyLabel.Size = UDim2.new(1, 0, 0, 50)
+	EmptyLabel.ZIndex = 208
+	EmptyLabel.FontFace = Pear.FontSemiBold
+	EmptyLabel.Text = "Seems pretty empty here..\nYou have no configs yet!\nMake one below ↓"
+	EmptyLabel.TextColor3 = Color3.fromRGB(90, 90, 90)
+	EmptyLabel.TextSize = 10
+	EmptyLabel.TextWrapped = true
+	EmptyLabel.TextXAlignment = Enum.TextXAlignment.Center
+	EmptyLabel.Visible = true
+
 	SpaceBox.Name = "SpaceBox"
 	SpaceBox.Parent = ScrollingFrame
 	SpaceBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -3909,6 +3924,8 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	TextBox.TextSize = 10.000
 	TextBox.TextTransparency = 0.500
 	TextBox.TextXAlignment = Enum.TextXAlignment.Left
+	TextBox.PlaceholderText = "Config name..."
+	TextBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
 
 	AddConfigButton.Name = "AddConfigButton"
 	AddConfigButton.Parent = InputFrame
@@ -3974,6 +3991,55 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 
 	UICorner_7.CornerRadius = UDim.new(1, 0)
 	UICorner_7.Parent = DeleteButton
+
+	-- Apply (load selected config)
+	ApplyButton.Name = "ApplyButton"
+	ApplyButton.Parent = ConfigWindowFrame
+	ApplyButton.AnchorPoint = Vector2.new(0.5, 1)
+	ApplyButton.BackgroundColor3 = Pear.Colors.Main
+	ApplyButton.BorderSizePixel = 0
+	ApplyButton.Position = UDim2.new(0.5, 0, 1, -5)
+	ApplyButton.Size = UDim2.new(1, -16, 0, 0) -- hidden until Init
+	ApplyButton.ZIndex = 210
+	ApplyButton.AutoButtonColor = false
+	ApplyButton.FontFace = Pear.FontSemiBold
+	ApplyButton.Text = "Apply"
+	ApplyButton.TextColor3 = Color3.fromRGB(16, 16, 16)
+	ApplyButton.TextSize = 10
+	ApplyButton.Visible = false
+	do
+		local _c = Instance.new("UICorner")
+		_c.CornerRadius = UDim.new(0, 2)
+		_c.Parent = ApplyButton
+	end
+
+	-- Autoload toggle checkbox
+	AutoloadCheckbox.Name = "AutoloadCheckbox"
+	AutoloadCheckbox.Parent = ConfigWindowFrame
+	AutoloadCheckbox.AnchorPoint = Vector2.new(1, 1)
+	AutoloadCheckbox.BackgroundTransparency = 1
+	AutoloadCheckbox.BorderSizePixel = 0
+	AutoloadCheckbox.Position = UDim2.new(1, -8, 1, -10)
+	AutoloadCheckbox.Size = UDim2.new(0, 12, 0, 12)
+	AutoloadCheckbox.ZIndex = 210
+	AutoloadCheckbox.Image = Pear:GetIcon("square")
+	AutoloadCheckbox.ImageColor3 = Color3.fromRGB(120, 120, 120)
+	AutoloadCheckbox.ImageTransparency = 0.3
+	AutoloadCheckbox.Visible = false
+	do
+		local _lbl = Instance.new("TextLabel")
+		_lbl.Parent = AutoloadCheckbox
+		_lbl.BackgroundTransparency = 1
+		_lbl.AnchorPoint = Vector2.new(1, 0.5)
+		_lbl.Position = UDim2.new(0, -3, 0.5, 0)
+		_lbl.Size = UDim2.new(0, 55, 1, 0)
+		_lbl.ZIndex = 210
+		_lbl.FontFace = Pear.FontSemiBold
+		_lbl.Text = "Autoload"
+		_lbl.TextColor3 = Color3.fromRGB(120, 120, 120)
+		_lbl.TextSize = 9
+		_lbl.TextXAlignment = Enum.TextXAlignment.Right
+	end
 
 	Button.MouseButton1Click:Connect(function()
 		ElementToggle(true);
@@ -4103,6 +4169,11 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 					button.Text = "  "..tostring(v);
 				end);
 			end;
+
+			-- empty state visibility
+			EmptyLabel.Visible = (#Configs == 0);
+			ApplyButton.Visible = (#Configs > 0);
+			AutoloadCheckbox.Visible = (#Configs > 0);
 		end,
 
 		ReloadConfig = function()
@@ -4254,6 +4325,61 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 					res:ReloadConfig();
 				end;
 			end)
+
+			-- Apply button: load selected config
+			ApplyButton.MouseButton1Click:Connect(function()
+				if import and import.Name then
+					res:LoadConfig(import.Name);
+				end;
+			end);
+
+			-- Autoload toggle setup
+			local __autoloadPath = cfgPath .. "/__autoload.txt"
+			local __autoloadEnabled = false
+			local function updateAutoloadVisual()
+				if __autoloadEnabled then
+					AutoloadCheckbox.Image = Pear:GetIcon("check-square")
+					AutoloadCheckbox.ImageColor3 = Pear.Colors.Main
+				else
+					AutoloadCheckbox.Image = Pear:GetIcon("square")
+					AutoloadCheckbox.ImageColor3 = Color3.fromRGB(120, 120, 120)
+				end
+			end
+
+			pcall(function()
+				if isfile(__autoloadPath) then
+					local saved = readfile(__autoloadPath)
+					if saved and saved ~= "" then
+						__autoloadEnabled = true
+						updateAutoloadVisual()
+					end
+				end
+			end)
+
+			AutoloadCheckbox.MouseButton1Click:Connect(function()
+				if not (import and import.Name) then return end
+				__autoloadEnabled = not __autoloadEnabled
+				updateAutoloadVisual()
+				pcall(function()
+					if __autoloadEnabled then
+						writefile(__autoloadPath, import.Name)
+					else
+						if isfile(__autoloadPath) then delfile(__autoloadPath) end
+					end
+				end)
+			end)
+
+			-- Autoload on join: if __autoload.txt exists, load that config
+			pcall(function()
+				if isfile(__autoloadPath) then
+					local autoName = readfile(__autoloadPath)
+					if autoName and autoName ~= "" then
+						task.defer(function()
+							pcall(function() res:LoadConfig(autoName) end)
+						end)
+					end
+				end
+			end)
 		end,
 	});
 
@@ -4298,7 +4424,7 @@ function Pear.new(Window: Window)
 		windowTitle = windowTitle .. " 🍐";
 	end
 
-	local Fatal = {
+	local UI = {
 		Menus = {},
 		ElementContents = {},
 		MenuSelected = nil,
@@ -4306,7 +4432,7 @@ function Pear.new(Window: Window)
 		Signal = Instance.new('BindableEvent');
 	};
 
-	Fatal.Notifier = Pear.__NOTIFIER_CACHE or Pear:CreateNotifier();
+	UI.Notifier = Pear.__NOTIFIER_CACHE or Pear:CreateNotifier();
 
 	local Pearwin = Instance.new("ScreenGui")
 	local FatalFrame = Instance.new("Frame")
@@ -4369,15 +4495,15 @@ function Pear.new(Window: Window)
 	end);
 
 	local ToggleUI = function(bool)
-		Fatal.Signal:Fire(bool);
+		UI.Signal:Fire(bool);
 
 		if bool then
-			for i,v in next , Fatal.Menus do
+			for i,v in next , UI.Menus do
 				v.ValueSelect(false);
 			end;
 
-			if Fatal.MenuSelected then
-				Fatal.MenuSelected.ValueSelect(true)
+			if UI.MenuSelected then
+				UI.MenuSelected.ValueSelect(true)
 			end
 
 			Pear:CreateAnimation(FatalFrame,0.15,{
@@ -4468,7 +4594,7 @@ function Pear.new(Window: Window)
 		else
 			table.clear(Pear.DragBlacklist);
 
-			for i,v in next , Fatal.Menus do
+			for i,v in next , UI.Menus do
 				v.ValueSelect(false);
 			end;
 
@@ -5114,75 +5240,28 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		end
 
 		if input.KeyCode == __uiKeybind then
-			Fatal.Toggle = not Fatal.Toggle;
-			ToggleUI(Fatal.Toggle);
+			UI.Toggle = not UI.Toggle;
+			ToggleUI(UI.Toggle);
 		end;
 	end)
 
-	function Fatal:SetUsername(name: string)
+	function UI:SetUsername(name: string)
 		User_name.Text = name or Client.DisplayName;
 	end;
 
-	function Fatal:SetProfile(icon: string)
+	function UI:SetProfile(icon: string)
 		UserIcon.Image = icon or Players:GetUserThumbnailAsync(Client.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180);
 	end;
 
-	function Fatal:SetVersion(str: string)
+	function UI:SetVersion(str: string)
 		version_label.Text = string.format("<font transparency=\"0.5\">version:</font> <font color=\"#a6d388\">%s</font>",tostring(str))
 	end;
 
-	function Fatal:GetFlags()
+	function UI:GetFlags()
 		return Pear.WindowFlags[Pearwin];
 	end;
 
-	function Fatal:AddConfig(Config)
-		-- Support both old no-arg style and new Pear:AddConfig({GameName=..., Folder=...}) style
-		Config = Config or {}
-		local ConfigButton = Instance.new("ImageButton")
-
-		ConfigButton.Name = "ConfigButton"
-		ConfigButton.Parent = Bottom;
-		ConfigButton.AnchorPoint = Vector2.new(0, 0.5)
-		ConfigButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		ConfigButton.BackgroundTransparency = 1.000
-		ConfigButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		ConfigButton.BorderSizePixel = 0
-		ConfigButton.Position = UDim2.new(0, 57, 0.5, 0)
-		ConfigButton.Size = UDim2.new(0, 16, 0, 16)
-		ConfigButton.ZIndex = 4
-		ConfigButton.Image = "rbxassetid://10723387721"
-		ConfigButton.ImageTransparency = 0.500;
-
-		Pear:CreateHover(ConfigButton,function(bool)
-			if bool then
-				Pear:CreateAnimation(ConfigButton,0.3,{
-					ImageTransparency = 0.2500;
-				})
-			else
-				Pear:CreateAnimation(ConfigButton,0.3,{
-					ImageTransparency = 0.500;
-				})
-			end;
-		end);
-
-		local cfgRes = Pear:CreateConfigWindow(Pearwin,Fatal,ConfigButton);
-
-		-- auto-init if GameName or Folder provided
-		if Config.GameName or Config.Folder then
-			local gameName = tostring(Config.GameName or "Universal")
-			local folder = tostring(Config.Folder or "Pear-Configs")
-			task.defer(function()
-				pcall(function()
-					cfgRes:Init(gameName, folder)
-					cfgRes:ReloadConfig()
-				end)
-			end)
-		end
-
-		return cfgRes;
-	end;
-
-	function Fatal:LoadConfig(config)
+	function UI:LoadConfig(config)
 
 		for i,v in next , config do
 			if i ~= "Info" then
@@ -5213,8 +5292,8 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		end;
 	end;
 
-	function Fatal:GetFlagConfig()
-		local Flags = Fatal:GetFlags();
+	function UI:GetFlagConfig()
+		local Flags = UI:GetFlags();
 
 		local ConfigElement = {};
 
@@ -5276,7 +5355,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		return ConfigElement;
 	end;
 
-	function Fatal:AddMenu(Menu : Menu)
+	function UI:AddMenu(Menu : Menu)
 		Menu = Menu or {};
 		Menu.Name = Menu.Name or "EXAMPLE";
 		Menu.Icon = Menu.Icon or "eye";
@@ -5444,7 +5523,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			Center.CanvasSize = UDim2.new(0,0,0,0);
 		end;
 
-		Fatal.Signal.Event:Connect(function(Bool)
+		UI.Signal.Event:Connect(function(Bool)
 			if Bool then
 				Pear:CreateAnimation(MenuButton,0.5,{
 					BackgroundTransparency = (MenuLiber.Visible and 0) or 1
@@ -5552,18 +5631,18 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			Bindable = BindEvent,
 		};
 
-		if not Fatal.MenuSelected then
-			Fatal.MenuSelected = _B;
+		if not UI.MenuSelected then
+			UI.MenuSelected = _B;
 
 			ValueSelect(true);
 		else
 			ValueSelect(false);
 		end;
 
-		table.insert(Fatal.Menus,_B)
+		table.insert(UI.Menus,_B)
 
 		Pear:CreateHover(MenuButton,function(bool)
-			if Fatal.MenuSelected.Root ~= MenuLiber then
+			if UI.MenuSelected.Root ~= MenuLiber then
 				if bool then
 					Pear:CreateAnimation(Icon,0.5,{
 						ImageTransparency = 0.2,
@@ -5595,9 +5674,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		end)
 
 		Pear:NewInput(MenuButton,function()
-			for i,v in next , Fatal.Menus do
+			for i,v in next , UI.Menus do
 				if v.Root == MenuLiber then
-					Fatal.MenuSelected = v;
+					UI.MenuSelected = v;
 
 					v.ValueSelect(true)
 				else
@@ -5734,7 +5813,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			Config.Default = Config.Default or ((Config.Multi and nil) or {});
 			Config.Callback = Config.Callback or function() end;
 
-			table.insert(Fatal.ElementContents,{
+			table.insert(UI.ElementContents,{
 				Name = Config.Name,
 				Path = Menu.Name .. " > ".. Config.Name,
 				_TAB = _B
@@ -6184,7 +6263,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			Config.Position = Config.Position or "center";
 			Config.Height = Config.Height or 0;
 
-			table.insert(Fatal.ElementContents,{
+			table.insert(UI.ElementContents,{
 				Name = Config.Name,
 				Path = Menu.Name .. " > ".. Config.Name,
 				_TAB = _B
@@ -6295,7 +6374,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			return Pear:CreateElements(Elements,Elements.ZIndex,BindEvent,{
 				Path = Menu.Name .. " > ".. Config.Name,
 				Memory = function(Name)
-					table.insert(Fatal.ElementContents,{
+					table.insert(UI.ElementContents,{
 						Name = Name,
 						Path = Menu.Name .. " > ".. Config.Name .. " > " .. Name,
 						_TAB = _B
@@ -6519,11 +6598,29 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 
 
 
-		function Fatal:AddSave(callback)
+		function UI:AddSave(callback)
 			SaveButton.MouseButton1Click:Connect(callback);
 		end;
 
-		function Fatal:AddInfo(callback)
+		-- Wire SaveButton (floppy disk) as the one and only config panel toggle
+		local __cfgRes = Pear:CreateConfigWindow(Pearwin, UI, SaveButton);
+		UI.__ConfigRes = __cfgRes;
+
+		-- Public API: UI:AddConfig({GameName=..., Folder=...}) initialises the config dir and autoloads
+		function UI:AddConfig(Config)
+			Config = Config or {}
+			local gameName = tostring(Config.GameName or "Universal")
+			local folder = tostring(Config.Folder or "Pear-Configs")
+			task.defer(function()
+				pcall(function()
+					__cfgRes:Init(gameName, folder)
+					__cfgRes:ReloadConfig()
+				end)
+			end)
+			return __cfgRes;
+		end;
+
+		function UI:AddInfo(callback)
 			InfoClickEvent.Event:Connect(callback);
 		end;
 		-- settings (UI keybind)
@@ -6747,8 +6844,8 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 
 				-- tap (didn't drag) -> toggle UI
 				if not _bMoved then
-					Fatal.Toggle = not Fatal.Toggle
-					ToggleUI(Fatal.Toggle)
+					UI.Toggle = not UI.Toggle
+					ToggleUI(UI.Toggle)
 
 					-- flash stroke
 					Pear:CreateAnimation(BubbleStroke, 0.15, {
@@ -7129,9 +7226,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 
 			button.MouseButton1Click:Connect(function()
 				if TAB_WARP then
-					for i,v in next , Fatal.Menus do
+					for i,v in next , UI.Menus do
 						if v.Root == TAB_WARP.Root then
-							Fatal.MenuSelected = v;
+							UI.MenuSelected = v;
 							v.ValueSelect(true)
 						else
 							v.ValueSelect(false)
@@ -7156,7 +7253,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 				end;
 			end);
 
-			table.foreach(Fatal.ElementContents,function(i,v)
+			table.foreach(UI.ElementContents,function(i,v)
 				local button = get_button(v.Name,v.Path,v._TAB);
 
 				SearchInformation[v.Path.." - "..Pear:RandomString()] = {
@@ -7203,7 +7300,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		end)
 	end;
 
-	function Fatal:GetButton()
+	function UI:GetButton()
 		local backpack = Instance.new("ImageButton")
 		local UICorner = Instance.new("UICorner")
 		local RowLabel = Instance.new("Frame")
@@ -7325,9 +7422,9 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		_5.ZIndex = 2
 
 		backpack.MouseButton1Click:Connect(function()
-			Fatal.Toggle = not Fatal.Toggle;
+			UI.Toggle = not UI.Toggle;
 
-			ToggleUI(Fatal.Toggle);
+			ToggleUI(UI.Toggle);
 		end);
 
 		backpack.MouseEnter:Connect(function()
@@ -7346,14 +7443,14 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		return backpack;
 	end;
 
-	function Fatal:SetVisible(b)
-		Fatal.Toggle = b;
+	function UI:SetVisible(b)
+		UI.Toggle = b;
 		ToggleUI(b);
 	end;
 
 	ToggleUI(true);
 
-	return Fatal;
+	return UI;
 end;
 
 function Pear:Loader(Config: Loader)
