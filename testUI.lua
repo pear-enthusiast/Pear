@@ -3,6 +3,7 @@ Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
 sickssayben
+7845 lines?!
 --]]
 
 -- Export Types --
@@ -3689,7 +3690,6 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	local UICorner_7 = Instance.new("UICorner")
 	local EmptyLabel = Instance.new("TextLabel")
 	local ApplyButton = Instance.new("TextButton")
-	local AutoloadCheckbox = Instance.new("ImageButton")
 
 	Pear:ScrollSignal(ScrollingFrame,UIListLayout,"Y");
 
@@ -3953,7 +3953,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	GetConfigButton.Position = UDim2.new(1, -8, 0, 10)
 	GetConfigButton.Size = UDim2.new(0, 15, 0, 15)
 	GetConfigButton.ZIndex = 209
-	GetConfigButton.Image = "rbxassetid://10723387265"
+	GetConfigButton.Image = "rbxassetid://10709790644"
 	GetConfigButton.ImageTransparency = 0.500
 
 	UICorner_5.CornerRadius = UDim.new(1, 0)
@@ -3982,7 +3982,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	DeleteButton.BackgroundTransparency = 1.000
 	DeleteButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	DeleteButton.BorderSizePixel = 0
-	DeleteButton.Position = UDim2.new(1, -8, 0, 55)
+	DeleteButton.Position = UDim2.new(1, -8, 0, 46)
 	DeleteButton.Size = UDim2.new(0, 15, 0, 15)
 	DeleteButton.ZIndex = 209
 	DeleteButton.Image = "rbxassetid://10747362393"
@@ -4011,34 +4011,6 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 		local _c = Instance.new("UICorner")
 		_c.CornerRadius = UDim.new(0, 2)
 		_c.Parent = ApplyButton
-	end
-
-	-- Autoload toggle checkbox
-	AutoloadCheckbox.Name = "AutoloadCheckbox"
-	AutoloadCheckbox.Parent = ConfigWindowFrame
-	AutoloadCheckbox.AnchorPoint = Vector2.new(1, 1)
-	AutoloadCheckbox.BackgroundTransparency = 1
-	AutoloadCheckbox.BorderSizePixel = 0
-	AutoloadCheckbox.Position = UDim2.new(1, -8, 1, -10)
-	AutoloadCheckbox.Size = UDim2.new(0, 12, 0, 12)
-	AutoloadCheckbox.ZIndex = 210
-	AutoloadCheckbox.Image = Pear:GetIcon("square")
-	AutoloadCheckbox.ImageColor3 = Color3.fromRGB(120, 120, 120)
-	AutoloadCheckbox.ImageTransparency = 0.3
-	AutoloadCheckbox.Visible = false
-	do
-		local _lbl = Instance.new("TextLabel")
-		_lbl.Parent = AutoloadCheckbox
-		_lbl.BackgroundTransparency = 1
-		_lbl.AnchorPoint = Vector2.new(1, 0.5)
-		_lbl.Position = UDim2.new(0, -3, 0.5, 0)
-		_lbl.Size = UDim2.new(0, 55, 1, 0)
-		_lbl.ZIndex = 210
-		_lbl.FontFace = Pear.FontSemiBold
-		_lbl.Text = "Autoload"
-		_lbl.TextColor3 = Color3.fromRGB(120, 120, 120)
-		_lbl.TextSize = 9
-		_lbl.TextXAlignment = Enum.TextXAlignment.Right
 	end
 
 	Button.MouseButton1Click:Connect(function()
@@ -4173,7 +4145,6 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 			-- empty state visibility
 			EmptyLabel.Visible = (#Configs == 0);
 			ApplyButton.Visible = (#Configs > 0);
-			AutoloadCheckbox.Visible = (#Configs > 0);
 		end,
 
 		ReloadConfig = function()
@@ -4271,7 +4242,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 
 				Fatal.Notifier:Notify({
 					Title = "Config",
-					Content = "Saved config '"..tostring(configName).."'",
+					Content = "Updated config '"..tostring(configName).."'",
 					Icon = "settings",
 					Duration = 4,
 				});
@@ -4333,43 +4304,8 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 				end;
 			end);
 
-			-- Autoload toggle setup
+			-- Autoload on execute: if __autoload.txt exists, load that config
 			local __autoloadPath = cfgPath .. "/__autoload.txt"
-			local __autoloadEnabled = false
-			local function updateAutoloadVisual()
-				if __autoloadEnabled then
-					AutoloadCheckbox.Image = Pear:GetIcon("check-square")
-					AutoloadCheckbox.ImageColor3 = Pear.Colors.Main
-				else
-					AutoloadCheckbox.Image = Pear:GetIcon("square")
-					AutoloadCheckbox.ImageColor3 = Color3.fromRGB(120, 120, 120)
-				end
-			end
-
-			pcall(function()
-				if isfile(__autoloadPath) then
-					local saved = readfile(__autoloadPath)
-					if saved and saved ~= "" then
-						__autoloadEnabled = true
-						updateAutoloadVisual()
-					end
-				end
-			end)
-
-			AutoloadCheckbox.MouseButton1Click:Connect(function()
-				if not (import and import.Name) then return end
-				__autoloadEnabled = not __autoloadEnabled
-				updateAutoloadVisual()
-				pcall(function()
-					if __autoloadEnabled then
-						writefile(__autoloadPath, import.Name)
-					else
-						if isfile(__autoloadPath) then delfile(__autoloadPath) end
-					end
-				end)
-			end)
-
-			-- Autoload on join: if __autoload.txt exists, load that config
 			pcall(function()
 				if isfile(__autoloadPath) then
 					local autoName = readfile(__autoloadPath)
@@ -4380,6 +4316,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 					end
 				end
 			end)
+			res.__autoloadPath = __autoloadPath
 		end,
 	});
 
@@ -6639,7 +6576,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		SettingsFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
 		SettingsFrame.BorderSizePixel = 0
 		SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
-		SettingsFrame.Size = UDim2.new(0, 210, 0, 110)
+		SettingsFrame.Size = UDim2.new(0, 210, 0, 140)
 		SettingsFrame.Visible = false
 		SettingsFrame.ZIndex = 20
 
@@ -6927,6 +6864,95 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		-- clickable toggle for the phone button setting
 		Pear:NewInput(PhoneToggleBox, function()
 			__setPhoneToggle(not __phoneBubbleEnabled)
+		end)
+
+		-- Autoload last used config at execute
+		local AutoloadTitle = Instance.new("TextLabel")
+		local AutoloadBox = Instance.new("Frame")
+		local AutoloadCorner = Instance.new("UICorner")
+		local AutoloadIcon = Instance.new("ImageLabel")
+		local __autoloadSettingEnabled = false
+		local __autoloadSettingSavePath = "Pear/__autoload_setting_" .. string.gsub(tostring(Window.Name), "[^%w]", "_") .. ".txt"
+
+		AutoloadTitle.Name = Pear:RandomString()
+		AutoloadTitle.Parent = SettingsFrame
+		AutoloadTitle.BackgroundTransparency = 1
+		AutoloadTitle.Position = UDim2.new(0, 10, 0, 90)
+		AutoloadTitle.Size = UDim2.new(0, 155, 0, 30)
+		AutoloadTitle.ZIndex = 21
+		AutoloadTitle.Font = Enum.Font.Gotham
+		AutoloadTitle.Text = "Autoload last used config at execute:"
+		AutoloadTitle.TextColor3 = Color3.fromRGB(210, 210, 210)
+		AutoloadTitle.TextSize = 11
+		AutoloadTitle.TextXAlignment = Enum.TextXAlignment.Left
+		AutoloadTitle.TextWrapped = true
+
+		AutoloadBox.Name = Pear:RandomString()
+		AutoloadBox.Parent = SettingsFrame
+		AutoloadBox.BackgroundColor3 = Pear.Colors.Black
+		AutoloadBox.BorderSizePixel = 0
+		AutoloadBox.Position = UDim2.new(1, -10, 0, 96)
+		AutoloadBox.AnchorPoint = Vector2.new(1, 0)
+		AutoloadBox.Size = UDim2.new(0, 22, 0, 22)
+		AutoloadBox.ZIndex = 21
+
+		AutoloadCorner.CornerRadius = UDim.new(0, 2)
+		AutoloadCorner.Parent = AutoloadBox
+
+		AutoloadIcon.Name = Pear:RandomString()
+		AutoloadIcon.Parent = AutoloadBox
+		AutoloadIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+		AutoloadIcon.BackgroundTransparency = 1
+		AutoloadIcon.BorderSizePixel = 0
+		AutoloadIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+		AutoloadIcon.Size = UDim2.new(0.7, 0, 0.7, 0)
+		AutoloadIcon.ZIndex = 22
+		AutoloadIcon.Image = "rbxassetid://10709790644"
+		AutoloadIcon.ImageColor3 = Pear.Colors.Main
+		AutoloadIcon.ImageTransparency = 1
+
+		local function __setAutoloadSetting(enabled)
+			__autoloadSettingEnabled = enabled
+			if enabled then
+				Pear:CreateAnimation(AutoloadIcon, 0.35, {
+					ImageTransparency = 0,
+					Size = UDim2.new(0.8, 0, 0.8, 0),
+					Rotation = 0
+				})
+				Pear:CreateAnimation(AutoloadBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+			else
+				Pear:CreateAnimation(AutoloadIcon, 0.35, {
+					ImageTransparency = 1,
+					Size = UDim2.new(0.7, 0, 0.7, 0),
+					Rotation = 15
+				})
+				Pear:CreateAnimation(AutoloadBox, 0.35, {
+					BackgroundTransparency = 0
+				})
+			end
+			pcall(function()
+				if not isfolder("Pear") then makefolder("Pear") end
+				writefile(__autoloadSettingSavePath, enabled and "1" or "0")
+				-- sync: if disabling, also delete the active __autoload.txt
+				if not enabled and UI.__ConfigRes and UI.__ConfigRes.__autoloadPath then
+					local ap = UI.__ConfigRes.__autoloadPath
+					if isfile(ap) then delfile(ap) end
+				end
+			end)
+		end
+
+		Pear:NewInput(AutoloadBox, function()
+			__setAutoloadSetting(not __autoloadSettingEnabled)
+		end)
+
+		pcall(function()
+			if not isfolder("Pear") then makefolder("Pear") end
+			if isfile(__autoloadSettingSavePath) then
+				local saved = readfile(__autoloadSettingSavePath)
+				if saved == "1" then __setAutoloadSetting(true) end
+			end
 		end)
 
 		__keybindButtonRef = KeybindButton
