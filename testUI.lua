@@ -2,8 +2,7 @@
 Pear ui
 meowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeowmeow
 mipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmipmip
-sickssayben
-7845 lines?!
+7875 are we fuckass
 --]]
 
 -- Export Types --
@@ -4014,7 +4013,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 	end
 
 	Button.MouseButton1Click:Connect(function()
-		ElementToggle(true);
+		ElementToggle(not UIToggle);
 	end);
 
 	Pear:CreateHover(DeleteButton,function(bool)
@@ -4067,7 +4066,7 @@ function Pear:CreateConfigWindow(Root: ScreenGui , Fatal , Button: ImageButton)
 
 	game:GetService('UserInputService').InputBegan:Connect(function(Input,Typing)
 		if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
-			if UIToggle and not Pear:IsMouseOverFrame(ConfigWindowFrame) then
+			if UIToggle and not Pear:IsMouseOverFrame(ConfigWindowFrame) and not Pear:IsMouseOverFrame(Button) then
 				ElementToggle(false);
 			end;
 		end;
@@ -6576,8 +6575,8 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 		SettingsFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
 		SettingsFrame.BorderSizePixel = 0
 		SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
-		SettingsFrame.Size = UDim2.new(0, 210, 0, 140)
-		SettingsFrame.Visible = false
+		SettingsFrame.Size = UDim2.new(0, 210, 0, 0)
+		SettingsFrame.ClipsDescendants = true
 		SettingsFrame.ZIndex = 20
 
 		SettingsCorner.CornerRadius = UDim.new(0, 6)
@@ -6964,10 +6963,31 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			end
 		end)
 
+		local __settingsFullSize = UDim2.new(0, 210, 0, 140)
+
+		local function SettingsToggle(value)
+			__settingsOpen = value
+			if value then
+				SettingsFrame.Position = UDim2.new(0, 10, 0, -8)
+				Pear:CreateAnimation(SettingsFrame, 0.3, {
+					Size = __settingsFullSize
+				})
+				Pear:CreateAnimation(SettingsStroke, 0.3, {
+					Transparency = 0.80
+				})
+			else
+				Pear:CreateAnimation(SettingsFrame, 0.275, {
+					Size = UDim2.new(0, 210, 0, 0)
+				})
+				Pear:CreateAnimation(SettingsStroke, 0.275, {
+					Transparency = 1
+				})
+			end
+		end
+
 		SettingsButton.MouseButton1Click:Connect(function()
 			if __destroyed then return end
-			__settingsOpen = not __settingsOpen
-			SettingsFrame.Visible = __settingsOpen
+			SettingsToggle(not __settingsOpen)
 		end)
 
 		-- click outside settings panel to close it
@@ -6976,8 +6996,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			if not __settingsOpen then return end
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 				if not Pear:IsMouseOverFrame(SettingsFrame) and not Pear:IsMouseOverFrame(SettingsButton) then
-					__settingsOpen = false
-					SettingsFrame.Visible = false
+					SettingsToggle(false)
 				end
 			end
 		end)
@@ -7266,7 +7285,18 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 			return ResultFrame;
 		end
 
+		local __searchOpen = false
+		local __origSearchToggle = SearchToggle
+		SearchToggle = function(value)
+			__searchOpen = value
+			__origSearchToggle(value)
+		end
+
 		SearchButton.MouseButton1Click:Connect(function()
+			if __searchOpen then
+				SearchToggle(false)
+				return
+			end
 			TextBox.Text = "";
 
 			SearchToggle(true);
@@ -7319,7 +7349,7 @@ KeybindConn = UserInputService.InputBegan:Connect(function(input,istyping)
 
 		UserInputService.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				if not Pear:IsMouseOverFrame(SearchFrame) then
+				if not Pear:IsMouseOverFrame(SearchFrame) and not Pear:IsMouseOverFrame(SearchButton) then
 					SearchToggle(false);
 				end
 			end
