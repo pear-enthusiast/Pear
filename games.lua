@@ -32,6 +32,12 @@ local definitions = {
         id           = "slapbattles",
         display_name = "Slap Battles"
     },
+    -- // Murderers VS Sheriffs Duels
+    {
+        ids          = { 12355337193 },
+        id           = "mvsd",
+        display_name = "Murderers VS Sheriffs Duels"
+    },
 }
 
 for _, game in ipairs(definitions) do
