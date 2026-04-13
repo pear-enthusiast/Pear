@@ -1,4 +1,4 @@
---idk why would you ever need to look at this, this is so useless if you're trying to crack pear, this is literally for configs, nothing more 😭
+--idk why would you ever need to look at this, this is so useless if you're trying to crack pear, this is literally for configs, nothing more :sob:
 local games = {}
 local definitions = {
     -- // Bee Swarm Simulator
@@ -19,9 +19,9 @@ local definitions = {
         id           = "anomic",
         display_name = "Anomic"
     },
-    -- // Basketball Legends
+    -- // Basketball Legends (main game only, MyPark not supported)
     {
-        ids          = { 14259168147 },
+        ids          = { 71832465156084 },
         id           = "basketballlegends",
         display_name = "Basketball Legends"
     },
@@ -33,7 +33,7 @@ local definitions = {
     },
     -- // Murderers VS Sheriffs Duels
     {
-        ids          = { 12355337193 },
+        ids          = { 12355337193, 13771457545 },
         id           = "mvsd",
         display_name = "Murderers VS Sheriffs Duels"
     },
@@ -51,7 +51,7 @@ local definitions = {
     },
     -- // Rivals
     {
-        ids          = { 17625359962 },
+        ids          = { 17625359962, 117398147513099 },
         id           = "rivals",
         display_name = "Rivals"
     },
@@ -67,7 +67,7 @@ local definitions = {
         id           = "abyss",
         display_name = "Abyss"
     },
-    -- // Unknown Threat
+    -- // Unknown Threat (game deleted but script kept)
     {
         ids          = { 137133660234598 },
         id           = "unknownthreat",
@@ -79,9 +79,9 @@ local definitions = {
         id           = "prisonlife",
         display_name = "Prison Life"
     },
-    -- // Volleyball Legends
+    -- // Volleyball Legends (main + pro servers + ranked pvp)
     {
-        ids          = { 73956553001240 },
+        ids          = { 73956553001240, 109684591839194, 134314141048307 },
         id           = "volleyballlegends",
         display_name = "Volleyball Legends"
     },
@@ -91,7 +91,7 @@ local definitions = {
         id           = "bitebynight",
         display_name = "Bite By Night"
     },
-}
+}git
 for _, game in ipairs(definitions) do
     for _, placeId in ipairs(game.ids) do
         games[placeId] = {
