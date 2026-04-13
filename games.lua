@@ -91,7 +91,7 @@ local definitions = {
         id           = "bitebynight",
         display_name = "Bite By Night"
     },
-}git
+}
 for _, game in ipairs(definitions) do
     for _, placeId in ipairs(game.ids) do
         games[placeId] = {
