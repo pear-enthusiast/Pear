@@ -33,6 +33,8 @@ local definitions = {
     { ids = { 70845479499574 }, id = "bitebynight", display_name = "Bite By Night" },
     -- // Town
     { ids = { 4991214437 }, id = "town", display_name = "Town" },
+    -- // Untitled Tag Game
+    { ids = { 14044547200, 17438169829, 18333958402, 17588217277 }, id = "untitledtag", display_name = "Untitled Tag Game" },
 }
 for _, game in ipairs(definitions) do
     for _, placeId in ipairs(game.ids) do
