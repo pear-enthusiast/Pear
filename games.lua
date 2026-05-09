@@ -23,8 +23,8 @@ local definitions = {
     { ids = { 109397169461300 }, id = "sniperduels", display_name = "Sniper Duels" },
     -- // Abyss
     { ids = { 127794225497302 }, id = "abyss", display_name = "Abyss" },
-    -- // Unknown Threat (game deleted but script kept)
-    { ids = { 137133660234598 }, id = "unknownthreat", display_name = "Unknown Threat" },
+    -- // Unknown Threat
+    { ids = { 101055953340350 }, id = "unknownthreat", display_name = "Unknown Threat" },
     -- // Prison Life
     { ids = { 155615604 }, id = "prisonlife", display_name = "Prison Life" },
     -- // Volleyball Legends (main + pro servers + ranked pvp)
